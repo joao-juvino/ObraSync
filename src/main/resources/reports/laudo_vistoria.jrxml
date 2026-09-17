@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="laudo_vistoria" pageWidth="595" pageHeight="842" columnWidth="535"
+              leftMargin="30" rightMargin="30" topMargin="30" bottomMargin="30" uuid="e832d721-a472-466d-b8d4-f6b8969446d1">
+    
+    <property name="ireport.zoom" value="1.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+
+    <!-- Parâmetros do Laudo -->
+    <parameter name="DATA_EMISSAO" class="java.lang.String"/>
+    <parameter name="SISTEMA" class="java.lang.String" isForPrompting="false">
+        <defaultValueExpression><![CDATA["ObraSync - Gestão de Obras"]]></defaultValueExpression>
+    </parameter>
+
+    <!-- Campos da Entidade Vistoria -->
+    <field name="id" class="java.lang.Long"/>
+    <field name="obra" class="java.lang.String"/>
+    <field name="responsavel" class="java.lang.String"/>
+    <field name="localizacao" class="java.lang.String"/>
+    <field name="observacoes" class="java.lang.String"/>
+    <field name="dataVistoriaFormatada" class="java.lang.String"/>
+    <field name="tipoDescricao" class="java.lang.String"/>
+    <field name="statusDescricao" class="java.lang.String"/>
+
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+
+    <title>
+        <band height="90" splitType="Stretch">
+            <!-- Cabeçalho Principal com Barra Colorida -->
+            <rectangle>
+                <reportElement x="0" y="0" width="535" height="75" backcolor="#0F172A" mode="Opaque" uuid="a3c9a63c-62c1-4ebc-ba11-37d4e5f7253d">
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </reportElement>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="20" y="12" width="200" height="26" forecolor="#38BDF8" uuid="67ad8e3e-4623-42e7-91fe-2bfa11124d35"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ObraSync]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="20" y="38" width="260" height="18" forecolor="#94A3B8" uuid="932fefbe-346d-4912-9c10-ecb88e178b66"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <text><![CDATA[SISTEMA DE GESTÃO E FISCALIZAÇÃO TÉCNICA]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="290" y="15" width="230" height="22" forecolor="#FFFFFF" uuid="d6139169-1587-43cf-a0e2-63aa0eb060fc"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[LAUDO TÉCNICO DE VISTORIA]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="290" y="40" width="230" height="16" forecolor="#E2E8F0" uuid="7cf44569-8bc3-487b-a25e-2f8832aef5c8"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Registro Nº #" + $F{id}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <detail>
+        <band height="550" splitType="Stretch">
+            <!-- Bloco 1: Informações Gerais -->
+            <rectangle>
+                <reportElement x="0" y="0" width="535" height="24" backcolor="#F1F5F9" mode="Opaque" uuid="2a56e7e1-886d-44a5-b1a9-b68df7bb515d"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="12" y="4" width="300" height="16" forecolor="#1E293B" uuid="88e5d0a6-574f-4a0b-93ff-f187aef2cb46"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[1. IDENTIFICAÇÃO DO EMPREENDIMENTO E DA VISTORIA]]></text>
+            </staticText>
+
+            <!-- Campo Obra -->
+            <staticText>
+                <reportElement x="10" y="32" width="130" height="15" forecolor="#64748B" uuid="29633e66-4e58-45a8-ba76-2f63cb32d209"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Obra / Empreendimento:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="145" y="32" width="380" height="15" forecolor="#0F172A" uuid="3970b8a1-ff86-4fc6-b5ca-fa68926946bf"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{obra}]]></textFieldExpression>
+            </textField>
+
+            <!-- Campo Responsável -->
+            <staticText>
+                <reportElement x="10" y="52" width="130" height="15" forecolor="#64748B" uuid="939886f7-bce4-436d-b8d9-43c2c1146205"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Responsável Técnico:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="145" y="52" width="380" height="15" forecolor="#0F172A" uuid="f3d1b46a-7aa9-4786-bb50-32df6655c65f"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{responsavel}]]></textFieldExpression>
+            </textField>
+
+            <!-- Campo Tipo -->
+            <staticText>
+                <reportElement x="10" y="72" width="130" height="15" forecolor="#64748B" uuid="192a54b6-455b-48ae-94a2-e64e5c54d193"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Tipo de Vistoria:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="145" y="72" width="380" height="15" forecolor="#0F172A" uuid="e0e47da1-3c58-45a7-96a1-9a7c646bbfe2"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{tipoDescricao}]]></textFieldExpression>
+            </textField>
+
+            <!-- Campo Localização -->
+            <staticText>
+                <reportElement x="10" y="92" width="130" height="15" forecolor="#64748B" uuid="8a9b23b3-8557-4581-be98-656b6c20579e"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Localização / Pavimento:]]></text>
+            </staticText>
+            <textField isBlankWhenNull="true">
+                <reportElement x="145" y="92" width="380" height="15" forecolor="#0F172A" uuid="1736ca6d-88b9-43c3-8f64-88484a0d922e"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{localizacao} != null ? $F{localizacao} : "Não informado"]]></textFieldExpression>
+            </textField>
+
+            <!-- Campo Data -->
+            <staticText>
+                <reportElement x="10" y="112" width="130" height="15" forecolor="#64748B" uuid="b48348b6-9475-4720-9118-a68fb2a4d952"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Data da Inspeção:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="145" y="112" width="150" height="15" forecolor="#0F172A" uuid="c24a2ef7-7975-442c-a292-26154ea31f51"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{dataVistoriaFormatada}]]></textFieldExpression>
+            </textField>
+
+            <!-- Campo Status -->
+            <staticText>
+                <reportElement x="305" y="112" width="50" height="15" forecolor="#64748B" uuid="885bb326-66fe-4d7a-8f92-934d454bfd53"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Status:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="360" y="112" width="165" height="15" forecolor="#0F172A" uuid="a6582531-155e-4ef5-b6d8-466c4331e21b"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{statusDescricao}.toUpperCase()]]></textFieldExpression>
+            </textField>
+
+            <!-- Bloco 2: Parecer Técnico e Observações -->
+            <rectangle>
+                <reportElement x="0" y="145" width="535" height="24" backcolor="#F1F5F9" mode="Opaque" uuid="93cb33a9-e889-4a92-972c-d9c9b1406e57"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="12" y="149" width="300" height="16" forecolor="#1E293B" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf3"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[2. PARECER TÉCNICO E APONTAMENTOS DA FISCALIZAÇÃO]]></text>
+            </staticText>
+
+            <rectangle>
+                <reportElement x="0" y="177" width="535" height="140" uuid="7cf44569-8bc3-487b-a25e-2f8832aef5c9"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="12" y="187" width="511" height="120" forecolor="#1E293B" uuid="885bb326-66fe-4d7a-8f92-934d454bfd54"/>
+                <textElement>
+                    <font size="10" isItalic="false"/>
+                    <paragraph lineSpacing="1_1_2"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{observacoes} != null && !$F{observacoes}.trim().isEmpty() ? $F{observacoes} : "Nenhuma observação ou pendência técnica registrada nesta vistoria."]]></textFieldExpression>
+            </textField>
+
+            <!-- Bloco 3: Assinaturas e Responsabilidade Técnica -->
+            <rectangle>
+                <reportElement x="0" y="340" width="535" height="24" backcolor="#F1F5F9" mode="Opaque" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf4"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="12" y="344" width="300" height="16" forecolor="#1E293B" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf5"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[3. RESPONSABILIDADE TÉCNICA E HOMOLOGAÇÃO]]></text>
+            </staticText>
+
+            <!-- Linha de Assinatura 1 -->
+            <line>
+                <reportElement x="30" y="440" width="210" height="1" forecolor="#475569" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf6"/>
+                <graphicElement>
+                    <pen lineWidth="1.0"/>
+                </graphicElement>
+            </line>
+            <textField>
+                <reportElement x="30" y="445" width="210" height="16" forecolor="#0F172A" uuid="a6582531-155e-4ef5-b6d8-466c4331e21c"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{responsavel}]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="30" y="462" width="210" height="14" forecolor="#64748B" uuid="885bb326-66fe-4d7a-8f92-934d454bfd55"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="8"/>
+                </textElement>
+                <text><![CDATA[Engenheiro / Técnico Responsável]]></text>
+            </staticText>
+
+            <!-- Linha de Assinatura 2 -->
+            <line>
+                <reportElement x="295" y="440" width="210" height="1" forecolor="#475569" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf7"/>
+                <graphicElement>
+                    <pen lineWidth="1.0"/>
+                </graphicElement>
+            </line>
+            <staticText>
+                <reportElement x="295" y="445" width="210" height="16" forecolor="#0F172A" uuid="885bb326-66fe-4d7a-8f92-934d454bfd56"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Fiscalização da Obra / Contratante]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="295" y="462" width="210" height="14" forecolor="#64748B" uuid="885bb326-66fe-4d7a-8f92-934d454bfd57"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="8"/>
+                </textElement>
+                <text><![CDATA[Assinatura / Carimbo]]></text>
+            </staticText>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="30" splitType="Stretch">
+            <line>
+                <reportElement x="0" y="0" width="535" height="1" forecolor="#E2E8F0" uuid="2a56ee77-6228-4a95-bfa3-bb391307bcf8"/>
+            </line>
+            <textField>
+                <reportElement x="0" y="10" width="260" height="15" forecolor="#94A3B8" uuid="885bb326-66fe-4d7a-8f92-934d454bfd58"/>
+                <textElement verticalAlignment="Middle">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Emitido via ObraSync em: " + ($P{DATA_EMISSAO} != null ? $P{DATA_EMISSAO} : "")]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="435" y="10" width="100" height="15" forecolor="#94A3B8" uuid="885bb326-66fe-4d7a-8f92-934d454bfd59"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Página 1 de 1"]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

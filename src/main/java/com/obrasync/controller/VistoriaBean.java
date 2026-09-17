@@ -5,12 +5,16 @@ import com.obrasync.model.TipoVistoria;
 import com.obrasync.model.Vistoria;
 import com.obrasync.service.VistoriaService;
 
+import com.obrasync.report.RelatorioService;
+
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.List;
 
@@ -27,6 +31,9 @@ public class VistoriaBean implements Serializable {
 
     @Inject
     private VistoriaService vistoriaService;
+
+    @Inject
+    private RelatorioService relatorioService;
 
     private Vistoria vistoria;
     private List<Vistoria> vistorias;
@@ -118,6 +125,53 @@ public class VistoriaBean implements Serializable {
 
     public void setVistoriaService(VistoriaService vistoriaService) {
         this.vistoriaService = vistoriaService;
+    }
+
+    public void setRelatorioService(RelatorioService relatorioService) {
+        this.relatorioService = relatorioService;
+    }
+
+    /**
+     * Dispara o download do laudo técnico da vistoria em formato PDF diretamente no navegador.
+     * Configura o HttpServletResponse com Content-Type application/pdf e cabeçalho de anexo.
+     *
+     * @param vistoria Vistoria selecionada para emissão
+     */
+    public void baixarLaudoPdf(Vistoria vistoria) {
+        if (vistoria == null) {
+            adicionarMensagem(FacesMessage.SEVERITY_WARN, "Aviso", "Selecione uma vistoria válida para emitir o laudo.");
+            return;
+        }
+
+        try {
+            byte[] pdfBytes = relatorioService.gerarLaudoVistoriaPdf(vistoria);
+
+            FacesContext facesContext = null;
+            try {
+                facesContext = FacesContext.getCurrentInstance();
+            } catch (Throwable ignored) {
+                // Permite execução de testes unitários isolados fora do container JSF
+            }
+
+            if (facesContext != null && facesContext.getExternalContext() != null) {
+                HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+                response.reset();
+                response.setContentType("application/pdf");
+                response.setContentLength(pdfBytes.length);
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=\"laudo-vistoria-" + (vistoria.getId() != null ? vistoria.getId() : "temp") + ".pdf\"");
+
+                ServletOutputStream outputStream = response.getOutputStream();
+                outputStream.write(pdfBytes);
+                outputStream.flush();
+
+                facesContext.responseComplete();
+            }
+        } catch (Throwable e) {
+            adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro na Emissão do Laudo",
+                    "Falha ao gerar documento PDF: " + e.getMessage());
+        }
     }
 
     // Métodos para obtenção de métricas de Dashboard

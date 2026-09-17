@@ -13,18 +13,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.obrasync.report.RelatorioService;
+
 class VistoriaBeanTest {
 
     private VistoriaBean bean;
     private VistoriaService service;
+    private RelatorioService relatorioService;
 
     @BeforeEach
     void setUp() {
         service = new VistoriaService();
         service.inicializarDadosIniciais();
 
+        relatorioService = new RelatorioService();
+
         bean = new VistoriaBean();
         bean.setVistoriaService(service);
+        bean.setRelatorioService(relatorioService);
         bean.inicializar();
     }
 
@@ -93,5 +99,13 @@ class VistoriaBeanTest {
         assertTrue(bean.getPendentesCount() > 0);
         assertEquals(StatusVistoria.values().length, bean.getStatusList().length);
         assertEquals(TipoVistoria.values().length, bean.getTiposList().length);
+    }
+
+    @Test
+    @DisplayName("Deve executar método baixarLaudoPdf de forma segura quando fora do container web")
+    void deveExecutarBaixarLaudoPdf() {
+        Vistoria vistoria = bean.getVistorias().get(0);
+        assertDoesNotThrow(() -> bean.baixarLaudoPdf(vistoria));
+        assertDoesNotThrow(() -> bean.baixarLaudoPdf(null));
     }
 }

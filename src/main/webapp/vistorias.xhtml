@@ -368,8 +368,14 @@
                                rounded="true"/>
                     </p:column>
 
-                    <!-- Coluna Ações (Editar e Excluir) com AJAX -->
-                    <p:column headerText="Ações" style="width: 110px; text-align: center;">
+                    <!-- Coluna Ações (Baixar PDF, Editar e Excluir) -->
+                    <p:column headerText="Ações" style="width: 165px; text-align: center;">
+                        <p:commandButton icon="pi pi-file-pdf"
+                                         title="Baixar Laudo PDF"
+                                         styleClass="ui-button-rounded ui-button-help ui-button-flat"
+                                         actionListener="#{vistoriaBean.baixarLaudoPdf(item)}"
+                                         ajax="false"/>
+
                         <p:commandButton icon="pi pi-pencil"
                                          title="Editar"
                                          styleClass="ui-button-rounded ui-button-info ui-button-flat"
