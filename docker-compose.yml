@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  postgres-obrasync:
+  postgres_obrasync:
     image: postgres:15-alpine
     container_name: postgres_obrasync
     environment:
@@ -12,6 +10,25 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - obrasync-network
+
+  wildfly_obrasync:
+    image: jboss/wildfly:24.0.0.Final
+    container_name: wildfly_obrasync
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    volumes:
+      - ./target/obrasync.war:/opt/jboss/wildfly/standalone/deployments/obrasync.war
+    depends_on:
+      - postgres_obrasync
+    networks:
+      - obrasync-network
 
 volumes:
   pgdata:
+
+networks:
+  obrasync-network:
+    driver: bridge
