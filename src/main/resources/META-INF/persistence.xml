@@ -11,12 +11,13 @@
         <class>com.obrasync.model.Usuario</class>
         <class>com.obrasync.model.Obra</class>
         <class>com.obrasync.model.Vistoria</class>
+        <class>com.obrasync.model.EvidenciaVistoria</class>
 
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL10Dialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.default_schema" value="public"/>

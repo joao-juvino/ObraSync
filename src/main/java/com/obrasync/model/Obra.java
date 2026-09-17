@@ -13,7 +13,7 @@ import java.util.Objects;
  * Entidade JPA representando uma obra ou empreendimento da construção civil.
  */
 @Entity
-@Table(name = "obras")
+@Table(name = "tb_obra")
 public class Obra implements Serializable {
 
     private static final long serialVersionUID = 1L;

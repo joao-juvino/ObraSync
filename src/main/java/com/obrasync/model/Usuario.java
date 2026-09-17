@@ -1,6 +1,7 @@
 package com.obrasync.model;
 
 import javax.persistence.*;
+import javax.json.bind.annotation.JsonbTransient;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -8,7 +9,7 @@ import java.util.Objects;
  * Entidade JPA representando um usuário do sistema (Administrador ou Engenheiro).
  */
 @Entity
-@Table(name = "usuarios")
+@Table(name = "tb_usuario")
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -79,6 +80,7 @@ public class Usuario implements Serializable {
         this.email = email;
     }
 
+    @JsonbTransient
     public String getSenha() {
         return senha;
     }

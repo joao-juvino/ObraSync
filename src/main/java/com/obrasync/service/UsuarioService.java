@@ -36,6 +36,12 @@ public class UsuarioService implements Serializable {
         if (usuario.getEmail() != null) {
             usuario.setEmail(usuario.getEmail().trim().toLowerCase());
         }
+        if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            throw new IllegalArgumentException("A senha é obrigatória.");
+        }
+        if (!usuario.getSenha().startsWith("$2a$") && !usuario.getSenha().startsWith("$2b$")) {
+            usuario.setSenha(BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt(12)));
+        }
         if (usuario.getId() == null) {
             em.persist(usuario);
             return usuario;

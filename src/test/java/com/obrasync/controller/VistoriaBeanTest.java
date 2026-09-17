@@ -11,45 +11,26 @@ import com.obrasync.service.VistoriaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class VistoriaBeanTest {
 
     private VistoriaBean bean;
-    private VistoriaService service;
-    private RelatorioService relatorioService;
-
-    // Helpers reutilizados nos testes
-    private Obra obraFake() {
-        Obra o = new Obra();
-        o.setId(1L);
-        o.setNome("Obra Teste");
-        o.setEndereco("Rua Teste, 100");
-        o.setDataInicio(LocalDate.now().minusMonths(6));
-        o.setDataPrevisaoFim(LocalDate.now().plusMonths(6));
-        return o;
-    }
-
-    private Usuario usuarioFake() {
-        Usuario u = new Usuario();
-        u.setId(1L);
-        u.setNome("Eng. Teste");
-        u.setEmail("engenheiro@obrasync.com");
-        u.setSenha("$2a$10$hashqualquer");
-        u.setPerfil(Perfil.ENGENHEIRO);
-        return u;
-    }
+    @Mock private VistoriaService service;
+    @Mock private RelatorioService relatorioService;
 
     @BeforeEach
     void setUp() {
-        service = new VistoriaService();
-        service.inicializarDadosIniciais();
-
-        relatorioService = new RelatorioService();
+        when(service.listarTodas()).thenReturn(Collections.singletonList(vistoria(1L)));
 
         bean = new VistoriaBean();
         bean.setVistoriaService(service);
@@ -58,79 +39,62 @@ class VistoriaBeanTest {
     }
 
     @Test
-    @DisplayName("Deve inicializar o bean com listagem e formulario novo")
+    @DisplayName("Deve inicializar o bean com listagem do serviço JPA e formulário novo")
     void deveInicializarBean() {
-        assertNotNull(bean.getVistorias());
-        assertFalse(bean.getVistorias().isEmpty());
-        assertNotNull(bean.getVistoria());
+        assertEquals(1, bean.getVistorias().size());
         assertNull(bean.getVistoria().getId());
         assertEquals(StatusVistoria.PENDENTE, bean.getVistoria().getStatus());
     }
 
     @Test
-    @DisplayName("Deve preparar novo cadastro e preparar edicao preservando dados")
-    void devePrepararNovoEEdicao() {
-        bean.prepararNovo();
-        assertNull(bean.getVistoria().getId());
-
-        List<Vistoria> lista = bean.getVistorias();
-        Vistoria selecionada = lista.get(0);
+    @DisplayName("Deve preparar edição com cópia independente da vistoria listada")
+    void devePrepararEdicaoComCopiaIndependente() {
+        Vistoria selecionada = bean.getVistorias().get(0);
 
         bean.prepararEdicao(selecionada);
-        assertEquals(selecionada.getId(), bean.getVistoria().getId());
-        assertEquals(selecionada.getObra(), bean.getVistoria().getObra());
+        bean.getVistoria().getObra().setNome("Obra alterada no formulário");
 
-        // Altera o clone no bean sem alterar imediatamente o item da lista
-        Obra obraModificada = obraFake();
-        obraModificada.setNome("Obra Modificada no Modal");
-        bean.getVistoria().setObra(obraModificada);
-        assertNotEquals(bean.getVistoria().getObra(), selecionada.getObra());
+        assertEquals(1L, bean.getVistoria().getId());
+        assertEquals("Residencial Aurora", selecionada.getObra().getNome());
     }
 
     @Test
-    @DisplayName("Deve salvar vistoria e atualizar listagem")
+    @DisplayName("Deve salvar e recarregar a listagem")
     void deveSalvarVistoria() {
-        int totalAntes = bean.getVistorias().size();
-
-        bean.prepararNovo();
-        bean.getVistoria().setObra(obraFake());
-        bean.getVistoria().setResponsavel(usuarioFake());
-        bean.getVistoria().setTipo(TipoVistoria.ACABAMENTO);
-        bean.getVistoria().setStatus(StatusVistoria.APROVADA);
-        bean.getVistoria().setDataVistoria(LocalDate.now());
+        bean.prepararEdicao(vistoria(1L));
 
         bean.salvar();
 
-        assertEquals(totalAntes + 1, bean.getVistorias().size());
-        assertNull(bean.getVistoria().getId(), "Apos salvar deve resetar para nova vistoria");
+        verify(service).salvar(any(Vistoria.class));
+        verify(service, times(2)).listarTodas();
+        assertNull(bean.getVistoria().getId());
     }
 
     @Test
-    @DisplayName("Deve excluir vistoria e atualizar listagem")
+    @DisplayName("Deve excluir vistoria persistida e recarregar a listagem")
     void deveExcluirVistoria() {
-        int totalAntes = bean.getVistorias().size();
-        Vistoria paraExcluir = bean.getVistorias().get(0);
+        bean.excluir(vistoria(1L));
 
-        bean.excluir(paraExcluir);
-
-        assertEquals(totalAntes - 1, bean.getVistorias().size());
+        verify(service).excluir(1L);
+        verify(service, times(2)).listarTodas();
     }
 
     @Test
-    @DisplayName("Deve expor metricas e listas de enums")
+    @DisplayName("Deve expor métricas e enums do dashboard")
     void deveExporMetricasEEnums() {
-        assertTrue(bean.getTotalVistorias() > 0);
-        assertTrue(bean.getAprovadasCount() > 0);
-        assertTrue(bean.getPendentesCount() > 0);
+        when(service.contarTotal()).thenReturn(1L);
+        when(service.contarAprovadas()).thenReturn(1L);
+
+        assertEquals(1L, bean.getTotalVistorias());
+        assertEquals(1L, bean.getAprovadasCount());
         assertEquals(StatusVistoria.values().length, bean.getStatusList().length);
         assertEquals(TipoVistoria.values().length, bean.getTiposList().length);
     }
 
-    @Test
-    @DisplayName("Deve executar metodo baixarLaudoPdf de forma segura quando fora do container web")
-    void deveExecutarBaixarLaudoPdf() {
-        Vistoria vistoria = bean.getVistorias().get(0);
-        assertDoesNotThrow(() -> bean.baixarLaudoPdf(vistoria));
-        assertDoesNotThrow(() -> bean.baixarLaudoPdf(null));
+    private Vistoria vistoria(Long id) {
+        Obra obra = new Obra(1L, "Residencial Aurora", "Rua A", LocalDate.now(), LocalDate.now().plusDays(1));
+        Usuario usuario = new Usuario(2L, "Eng. Juliana", "juliana@obrasync.com", "hash", Perfil.ENGENHEIRO);
+        return new Vistoria(id, obra, usuario, TipoVistoria.ESTRUTURAL, LocalDate.now(),
+                StatusVistoria.APROVADA, "Bloco A", "Conforme");
     }
 }

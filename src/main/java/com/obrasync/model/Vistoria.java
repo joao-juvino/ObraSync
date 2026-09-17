@@ -5,13 +5,15 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidade JPA representando uma vistoria técnica de engenharia no canteiro de obras.
  * Possui relacionamentos @ManyToOne com Obra e com Usuario (engenheiro/responsável).
  */
 @Entity
-@Table(name = "vistorias")
+@Table(name = "tb_vistoria")
 public class Vistoria implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 1L;
@@ -45,6 +47,9 @@ public class Vistoria implements Serializable, Cloneable {
 
     @Column(columnDefinition = "TEXT")
     private String observacoes;
+
+    @OneToMany(mappedBy = "vistoria", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<EvidenciaVistoria> evidencias = new ArrayList<>();
 
     public Vistoria() {
         this.dataVistoria = LocalDate.now();
@@ -147,6 +152,7 @@ public class Vistoria implements Serializable, Cloneable {
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
     }
+    public List<EvidenciaVistoria> getEvidencias() { return evidencias; }
 
     @Override
     public Vistoria clone() {

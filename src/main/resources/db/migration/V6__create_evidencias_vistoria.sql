@@ -1,0 +1,2 @@
+CREATE TABLE tb_evidencia_vistoria (id BIGSERIAL PRIMARY KEY, vistoria_id BIGINT NOT NULL REFERENCES tb_vistoria(id) ON DELETE CASCADE, nome_arquivo VARCHAR(255) NOT NULL, tipo_mime VARCHAR(100) NOT NULL CHECK (tipo_mime IN ('image/jpeg','image/png')), tamanho BIGINT NOT NULL CHECK (tamanho > 0 AND tamanho <= 10485760), caminho_ou_identificador VARCHAR(255) NOT NULL UNIQUE, descricao VARCHAR(500), data_upload TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX idx_evidencia_vistoria_id ON tb_evidencia_vistoria(vistoria_id);

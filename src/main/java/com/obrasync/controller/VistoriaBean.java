@@ -3,7 +3,12 @@ package com.obrasync.controller;
 import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.TipoVistoria;
 import com.obrasync.model.Vistoria;
+import com.obrasync.model.Obra;
+import com.obrasync.model.Usuario;
+import com.obrasync.model.Perfil;
 import com.obrasync.service.VistoriaService;
+import com.obrasync.service.ObraService;
+import com.obrasync.service.UsuarioService;
 
 import com.obrasync.report.RelatorioService;
 
@@ -34,6 +39,12 @@ public class VistoriaBean implements Serializable {
 
     @Inject
     private RelatorioService relatorioService;
+
+    @Inject
+    private ObraService obraService;
+
+    @Inject
+    private UsuarioService usuarioService;
 
     private Vistoria vistoria;
     private List<Vistoria> vistorias;
@@ -131,6 +142,14 @@ public class VistoriaBean implements Serializable {
         this.relatorioService = relatorioService;
     }
 
+    public void setObraService(ObraService obraService) {
+        this.obraService = obraService;
+    }
+
+    public void setUsuarioService(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
     /**
      * Dispara o download do laudo técnico da vistoria em formato PDF diretamente no navegador.
      * Configura o HttpServletResponse com Content-Type application/pdf e cabeçalho de anexo.
@@ -202,6 +221,14 @@ public class VistoriaBean implements Serializable {
 
     public TipoVistoria[] getTiposList() {
         return TipoVistoria.values();
+    }
+
+    public List<Obra> getObrasDisponiveis() {
+        return obraService.listarTodas();
+    }
+
+    public List<Usuario> getResponsaveisDisponiveis() {
+        return usuarioService.listarPorPerfil(Perfil.ENGENHEIRO);
     }
 
     // Getters e Setters

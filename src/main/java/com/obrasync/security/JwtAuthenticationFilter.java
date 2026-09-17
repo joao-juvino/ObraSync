@@ -10,6 +10,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
+import javax.ws.rs.container.ResourceInfo;
+import javax.ws.rs.core.Context;
 import java.io.IOException;
 import java.security.Principal;
 
@@ -30,6 +32,8 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
 
     @Inject
     private JwtService jwtService;
+    @Context
+    private ResourceInfo resourceInfo;
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -52,6 +56,21 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
             String email  = claims.getSubject();
             String nome   = claims.get("nome",   String.class);
             String perfil = claims.get("perfil", String.class);
+
+            if (!metodoPermitido(requestContext.getMethod(), perfil)) {
+                ctx403(requestContext, "Perfil sem permissão para este recurso.");
+                return;
+            }
+
+            RolesPermitidos roles = resourceInfo != null && resourceInfo.getResourceMethod() != null
+                    ? resourceInfo.getResourceMethod().getAnnotation(RolesPermitidos.class) : null;
+            if (roles == null && resourceInfo != null && resourceInfo.getResourceClass() != null) {
+                roles = resourceInfo.getResourceClass().getAnnotation(RolesPermitidos.class);
+            }
+            if (roles != null && !java.util.Arrays.stream(roles.value()).anyMatch(r -> r.equalsIgnoreCase(perfil))) {
+                ctx403(requestContext, "Perfil sem permissão para este recurso.");
+                return;
+            }
 
             // Injeta SecurityContext para que os recursos possam consultar o usuario autenticado
             requestContext.setSecurityContext(new SecurityContext() {
@@ -89,4 +108,19 @@ public class JwtAuthenticationFilter implements ContainerRequestFilter {
                 .header("Content-Type", "application/json")
                 .build());
     }
+
+    private void ctx403(ContainerRequestContext ctx, String mensagem) {
+        ctx.abortWith(Response.status(Response.Status.FORBIDDEN)
+                .entity("{\"status\":403,\"mensagem\":\"" + mensagem + "\"}")
+                .header("Content-Type", "application/json").build());
+    }
+
+    private boolean metodoPermitido(String metodo, String perfil) {
+        if ("GET".equals(metodo)) return "ADMIN".equals(perfil) || "ENGENHEIRO".equals(perfil) || "FISCAL".equals(perfil);
+        if ("DELETE".equals(metodo)) return "ADMIN".equals(perfil);
+        return "ADMIN".equals(perfil) || "ENGENHEIRO".equals(perfil);
+    }
+
+    public void setJwtService(JwtService service) { this.jwtService = service; }
+    public void setResourceInfo(ResourceInfo info) { this.resourceInfo = info; }
 }

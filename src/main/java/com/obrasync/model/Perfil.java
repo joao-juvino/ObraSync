@@ -5,7 +5,8 @@ package com.obrasync.model;
  */
 public enum Perfil {
     ADMIN("Administrador"),
-    ENGENHEIRO("Engenheiro Fiscal");
+    ENGENHEIRO("Engenheiro"),
+    FISCAL("Fiscal");
 
     private final String descricao;
 

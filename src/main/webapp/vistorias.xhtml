@@ -17,8 +17,8 @@
     <!-- CSS externo do ObraSync via JSF resource (suporte a cache-busting automatico) -->
     <h:outputStylesheet library="css" name="style.css"/>
 
-    <!-- PrimeFlex 3 (CDN) para grid responsivo e utilitarios -->
-    <h:outputStylesheet name="https://unpkg.com/primeflex@3.3.1/primeflex.min.css"/>
+    <!-- PrimeFlex 3 para grid responsivo e utilitarios -->
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.min.css"/>
 </h:head>
 
 <h:body>
@@ -34,36 +34,36 @@
          TOPBAR – cabecalho fixo com marca, usuario logado e logout
          ================================================================ -->
     <header class="os-topbar">
-        <!-- Brand -->
-        <div class="os-topbar__brand">
-            <i class="pi pi-building brand-icon"/>
-            <div>
-                <span class="brand-name">ObraSync</span>
-                <span class="brand-tagline">Gestao Integrada de Obras e Vistorias</span>
-            </div>
-        </div>
-
-        <!-- Usuario logado + Logout -->
-        <div class="os-topbar__right">
-            <div class="os-user-info">
-                <div class="user-avatar">
-                    <i class="pi pi-user"/>
-                </div>
-                <div>
-                    <span class="user-name">#{authBean.usuarioLogado.nome}</span>
-                    <span class="user-role">#{authBean.usuarioLogado.perfil.name()}</span>
-                </div>
-            </div>
-
-            <h:form id="formLogout">
+        <h:form id="formCabecalho" styleClass="w-full">
+            <p:toolbar styleClass="os-toolbar border-none p-0">
+                <f:facet name="left">
+                    <div class="os-topbar__brand">
+                        <i class="pi pi-building brand-icon"/>
+                        <div>
+                            <span class="brand-name">ObraSync</span>
+                            <span class="brand-tagline">Gestao Integrada de Obras e Vistorias</span>
+                        </div>
+                    </div>
+                </f:facet>
+                <f:facet name="right">
+                    <div class="os-topbar__right">
+                        <div class="os-user-info">
+                            <div class="user-avatar"><i class="pi pi-user"/></div>
+                            <div>
+                                <span class="user-name">#{authBean.usuarioLogado.nome}</span>
+                                <span class="user-role">#{authBean.usuarioLogado.perfil.name()}</span>
+                            </div>
+                        </div>
                 <p:commandButton value="Sair"
                                  icon="pi pi-sign-out"
                                  styleClass="btn-logout"
                                  ajax="false"
                                  action="#{authBean.logout}"
                                  title="Encerrar sessao"/>
-            </h:form>
-        </div>
+                    </div>
+                </f:facet>
+            </p:toolbar>
+        </h:form>
     </header>
     <!-- /TOPBAR -->
 
@@ -290,7 +290,8 @@
               hideEffect="fade"
               closeOnEscape="true"
               resizable="false"
-              appendTo="@(body)">
+              appendTo="@(body)"
+              styleClass="os-dialog">
 
         <h:form id="formDialog">
             <p:outputPanel id="painelDados" styleClass="ui-fluid">
@@ -298,26 +299,34 @@
                 <!-- Campo: Obra (linha inteira) -->
                 <div class="os-field">
                     <p:outputLabel for="obra" value="Obra / Empreendimento *"/>
-                    <p:inputText id="obra"
-                                 value="#{vistoriaBean.vistoria.obra.nome}"
+                    <p:selectOneMenu id="obra"
+                                 value="#{vistoriaBean.vistoria.obra}"
+                                 converter="obraConverter"
                                  required="true"
-                                 requiredMessage="O campo Obra e obrigatorio."
-                                 placeholder="Ex: Residencial Jardins das Oliveiras"/>
+                                 requiredMessage="Selecione a obra.">
+                        <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
+                        <f:selectItems value="#{vistoriaBean.obrasDisponiveis}" var="obra"
+                                       itemLabel="#{obra.nome}" itemValue="#{obra}"/>
+                    </p:selectOneMenu>
                 </div>
 
                 <!-- Linha 2: Responsavel + Tipo (50/50 em desktop, 100 em mobile) -->
-                <div class="p-grid p-formgrid">
-                    <div class="p-col-12 p-md-6">
+                <div class="grid formgrid">
+                    <div class="col-12 md:col-6">
                         <div class="os-field">
                             <p:outputLabel for="responsavel" value="Engenheiro / Responsavel *"/>
-                            <p:inputText id="responsavel"
-                                         value="#{vistoriaBean.vistoria.responsavel.nome}"
+                            <p:selectOneMenu id="responsavel"
+                                         value="#{vistoriaBean.vistoria.responsavel}"
+                                         converter="usuarioConverter"
                                          required="true"
-                                         requiredMessage="O Responsavel Tecnico e obrigatorio."
-                                         placeholder="Ex: Eng. Carlos Ramos"/>
+                                         requiredMessage="Selecione o responsavel tecnico.">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{vistoriaBean.responsaveisDisponiveis}" var="responsavel"
+                                               itemLabel="#{responsavel.nome}" itemValue="#{responsavel}"/>
+                            </p:selectOneMenu>
                         </div>
                     </div>
-                    <div class="p-col-12 p-md-6">
+                    <div class="col-12 md:col-6">
                         <div class="os-field">
                             <p:outputLabel for="tipo" value="Tipo de Vistoria *"/>
                             <p:selectOneMenu id="tipo"
@@ -333,8 +342,8 @@
                 </div>
 
                 <!-- Linha 3: Data + Status (50/50) -->
-                <div class="p-grid p-formgrid">
-                    <div class="p-col-12 p-md-6">
+                <div class="grid formgrid">
+                    <div class="col-12 md:col-6">
                         <div class="os-field">
                             <p:outputLabel for="data" value="Data da Vistoria *"/>
                             <p:datePicker id="data"
@@ -346,7 +355,7 @@
                                           touchUI="true"/>
                         </div>
                     </div>
-                    <div class="p-col-12 p-md-6">
+                    <div class="col-12 md:col-6">
                         <div class="os-field">
                             <p:outputLabel for="status" value="Status da Vistoria *"/>
                             <p:selectOneMenu id="status"
@@ -382,19 +391,19 @@
 
             <!-- Footer do dialog com botoes (flex, responsivo) -->
             <f:facet name="footer">
-                <div class="p-d-flex p-jc-end p-flex-wrap" style="gap:.5rem; padding-top:.25rem;">
+                <div class="flex justify-content-end flex-wrap gap-2 pt-1 os-dialog-actions">
                     <p:commandButton value="Cancelar"
                                      icon="pi pi-times"
                                      type="button"
                                      onclick="PF('dialogVistoria').hide()"
-                                     styleClass="ui-button-secondary ui-button-outlined"/>
+                                     styleClass="ui-button-secondary ui-button-outlined os-action-button"/>
 
                     <p:commandButton value="Salvar Vistoria"
                                      icon="pi pi-check"
                                      actionListener="#{vistoriaBean.salvar}"
                                      update="@form :formPrincipal:tabelaVistorias :formPrincipal:painelKpis"
                                      oncomplete="if (!args.validationFailed) PF('dialogVistoria').hide()"
-                                     styleClass="ui-button-success"/>
+                                     styleClass="ui-button-success os-action-button"/>
                 </div>
             </f:facet>
         </h:form>

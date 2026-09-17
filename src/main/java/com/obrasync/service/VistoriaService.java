@@ -1,117 +1,102 @@
 package com.obrasync.service;
 
 import com.obrasync.model.StatusVistoria;
-import com.obrasync.model.TipoVistoria;
+import com.obrasync.model.Obra;
+import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 /**
- * Serviço de aplicação CDI para gerenciamento do ciclo de vida das Vistorias.
- * Fornece operações de persistência em memória (com suporte a concorrência)
- * e métodos analíticos para os indicadores do Dashboard.
+ * Serviço EJB para gerenciamento das vistorias persistidas no PostgreSQL.
  */
-@ApplicationScoped
+@Stateless
 public class VistoriaService implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Map<Long, Vistoria> repositorio = new ConcurrentHashMap<>();
-    private final AtomicLong geradorId = new AtomicLong(1);
-
-    @PostConstruct
-    public void inicializarDadosIniciais() {
-        carregarDadosExemplo();
-    }
-
-    private void carregarDadosExemplo() {
-        salvar(new Vistoria(null, "Residencial Jardins das Oliveiras", "Eng. Carlos Eduardo Ramos",
-                TipoVistoria.ESTRUTURAL, LocalDate.now().minusDays(10), StatusVistoria.APROVADA,
-                "Bloco B - Fundações e Pilares", "Fundações e armaduras inspecionadas conforme laudo de cálculo estrutural. Aprovado para concretagem."));
-
-        salvar(new Vistoria(null, "Edifício Horizon Corporate", "Eng. Mariana Tavares",
-                TipoVistoria.ELETRICA, LocalDate.now().minusDays(5), StatusVistoria.PENDENTE,
-                "12º Pavimento - Quadro de Distribuição", "Quadro secundário aguardando instalação do barramento de cobre e aterramento definitivo."));
-
-        salvar(new Vistoria(null, "Condomínio Villa Bella", "Eng. Rodrigo Albuquerque",
-                TipoVistoria.HIDRAULICA, LocalDate.now().minusDays(3), StatusVistoria.APROVADA,
-                "Torre 3 - Prumadas de Água Fria", "Teste de estanqueidade realizado com 10 bar de pressão durante 12 horas. Sem vazamentos."));
-
-        salvar(new Vistoria(null, "Parque Empresarial Alpha", "Eng. Camila Guimarães",
-                TipoVistoria.SEGURANCA_TRABALHO, LocalDate.now().minusDays(2), StatusVistoria.REPROVADA,
-                "Canteiro Geral - Linha de Vida", "Ausência de trava-quedas nas linhas de vida do 4º pavimento e andaimes sem rodapé regulamentar. Reinspeção exigida."));
-
-        salvar(new Vistoria(null, "Residencial Jardins das Oliveiras", "Eng. Carlos Eduardo Ramos",
-                TipoVistoria.ALVENARIA, LocalDate.now().minusDays(1), StatusVistoria.EM_ANDAMENTO,
-                "Bloco A - 3º Pavimento", "Levantamento de alvenarias estruturais em execução com prumo e nível em conformidade."));
-
-        salvar(new Vistoria(null, "Edifício Horizon Corporate", "Eng. Mariana Tavares",
-                TipoVistoria.ACABAMENTO, LocalDate.now(), StatusVistoria.PENDENTE,
-                "Térreo - Hall de Entrada e Portaria", "Assentamento de porcelanato com juntas de dilatação pendentes de rejunte epóxi."));
-    }
+    @PersistenceContext(unitName = "obrasyncPU")
+    private EntityManager em;
 
     public List<Vistoria> listarTodas() {
-        return repositorio.values().stream()
-                .sorted(Comparator.comparing(Vistoria::getId).reversed())
-                .collect(Collectors.toList());
+        return em.createQuery("SELECT v FROM Vistoria v "
+                        + "JOIN FETCH v.obra JOIN FETCH v.responsavel ORDER BY v.id DESC", Vistoria.class)
+                .getResultList();
+    }
+
+    public PaginaResultado<Vistoria> pesquisar(StatusVistoria status, com.obrasync.model.TipoVistoria tipo,
+            String obra, String responsavel, LocalDate dataInicial, LocalDate dataFinal, int page, int size) {
+        StringBuilder where = new StringBuilder(" WHERE 1=1"); Map<String,Object> params = new HashMap<>();
+        if(status!=null){where.append(" AND v.status=:status");params.put("status",status);} if(tipo!=null){where.append(" AND v.tipo=:tipo");params.put("tipo",tipo);}
+        if(obra!=null&&!obra.isBlank()){where.append(" AND LOWER(o.nome) LIKE :obra");params.put("obra","%"+obra.toLowerCase()+"%");}
+        if(responsavel!=null&&!responsavel.isBlank()){where.append(" AND LOWER(r.nome) LIKE :responsavel");params.put("responsavel","%"+responsavel.toLowerCase()+"%");}
+        if(dataInicial!=null){where.append(" AND v.dataVistoria>=:dataInicial");params.put("dataInicial",dataInicial);} if(dataFinal!=null){where.append(" AND v.dataVistoria<=:dataFinal");params.put("dataFinal",dataFinal);}
+        javax.persistence.TypedQuery<Vistoria> q=em.createQuery("SELECT v FROM Vistoria v JOIN FETCH v.obra o JOIN FETCH v.responsavel r"+where+" ORDER BY v.id DESC",Vistoria.class);
+        javax.persistence.TypedQuery<Long> c=em.createQuery("SELECT COUNT(v) FROM Vistoria v JOIN v.obra o JOIN v.responsavel r"+where,Long.class);
+        params.forEach((k,v)->{q.setParameter(k,v);c.setParameter(k,v);}); q.setFirstResult(page*size).setMaxResults(size);
+        return new PaginaResultado<>(q.getResultList(),c.getSingleResult());
     }
 
     public Vistoria buscarPorId(Long id) {
         if (id == null) {
             return null;
         }
-        return repositorio.get(id);
+        try {
+            return em.createQuery("SELECT v FROM Vistoria v "
+                            + "JOIN FETCH v.obra JOIN FETCH v.responsavel WHERE v.id = :id", Vistoria.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
-    public synchronized Vistoria salvar(Vistoria vistoria) {
+    public Vistoria salvar(Vistoria vistoria) {
         if (vistoria == null) {
             throw new IllegalArgumentException("A vistoria não pode ser nula.");
         }
+        associarRelacionamentosGerenciados(vistoria);
 
         if (vistoria.getId() == null) {
-            vistoria.setId(geradorId.getAndIncrement());
+            em.persist(vistoria);
+            return vistoria;
         }
-
-        repositorio.put(vistoria.getId(), vistoria.clone());
-        return vistoria;
+        return em.merge(vistoria);
     }
 
-    public void excluir(Long id) {
+    public boolean excluir(Long id) {
         if (id != null) {
-            repositorio.remove(id);
+            Vistoria vistoria = em.find(Vistoria.class, id);
+            if (vistoria != null) {
+                em.remove(vistoria);
+                return true;
+            }
         }
+        return false;
     }
 
     public long contarTotal() {
-        return repositorio.size();
+        return em.createQuery("SELECT COUNT(v) FROM Vistoria v", Long.class).getSingleResult();
     }
 
     public long contarAprovadas() {
-        return repositorio.values().stream()
-                .filter(v -> v.getStatus() == StatusVistoria.APROVADA)
-                .count();
+        return contarPorStatus(StatusVistoria.APROVADA);
     }
 
     public long contarPendentes() {
-        return repositorio.values().stream()
-                .filter(v -> v.getStatus() == StatusVistoria.PENDENTE)
-                .count();
+        return contarPorStatus(StatusVistoria.PENDENTE);
     }
 
     public long contarReprovadas() {
-        return repositorio.values().stream()
-                .filter(v -> v.getStatus() == StatusVistoria.REPROVADA)
-                .count();
+        return contarPorStatus(StatusVistoria.REPROVADA);
     }
 
     public double calcularTaxaAprovacao() {
@@ -120,5 +105,26 @@ public class VistoriaService implements Serializable {
             return 0.0;
         }
         return ((double) contarAprovadas() / total) * 100.0;
+    }
+
+    private void associarRelacionamentosGerenciados(Vistoria vistoria) {
+        if (vistoria.getObra() == null || vistoria.getObra().getId() == null) {
+            throw new IllegalArgumentException("A vistoria deve estar associada a uma obra persistida.");
+        }
+        if (vistoria.getResponsavel() == null || vistoria.getResponsavel().getId() == null) {
+            throw new IllegalArgumentException("A vistoria deve estar associada a um responsável persistido.");
+        }
+        vistoria.setObra(em.getReference(Obra.class, vistoria.getObra().getId()));
+        vistoria.setResponsavel(em.getReference(Usuario.class, vistoria.getResponsavel().getId()));
+    }
+
+    private long contarPorStatus(StatusVistoria status) {
+        return em.createQuery("SELECT COUNT(v) FROM Vistoria v WHERE v.status = :status", Long.class)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
+
+    public void setEntityManager(EntityManager em) {
+        this.em = em;
     }
 }

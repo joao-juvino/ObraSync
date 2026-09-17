@@ -66,8 +66,22 @@ body {
     justify-content: space-between;
     gap: 1rem;
     padding: 0 1.75rem;
-    height: 62px;
+    min-height: 62px;
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+.os-toolbar.ui-toolbar {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    min-height: 62px;
+}
+
+.os-toolbar .ui-toolbar-group-left,
+.os-toolbar .ui-toolbar-group-right {
+    display: flex;
+    align-items: center;
 }
 
 .os-topbar__brand {
@@ -174,6 +188,14 @@ body {
     .os-user-info .user-role {
         display: none;
     }
+}
+
+@media (max-width: 480px) {
+    .os-topbar { padding: 0 .75rem; }
+    .os-topbar__brand .brand-tagline { display: none; }
+    .os-topbar__right { gap: .5rem; }
+    .btn-logout.ui-button { padding: .35rem .55rem !important; }
+    .btn-logout .ui-button-text { display: none; }
 }
 
 /* ── KPI Cards ───────────────────────────────────────────── */
@@ -393,7 +415,8 @@ body {
 }
 
 .os-field .ui-inputtext:focus,
-.os-field .ui-inputtextarea:focus {
+.os-field .ui-inputtextarea:focus,
+.os-field .ui-selectonemenu.ui-state-focus {
     border-color: var(--brand-500) !important;
     box-shadow: 0 0 0 3px rgba(37,99,235,.12) !important;
     outline: none !important;
@@ -420,6 +443,11 @@ body {
     .os-card__header { flex-direction: column; align-items: flex-start; }
     .os-card__actions { width: 100%; }
     .os-card__actions .ui-button { flex: 1; justify-content: center; }
+    .os-dialog { width: calc(100vw - 1.5rem) !important; }
+    .os-dialog .ui-dialog-content,
+    .os-dialog .ui-dialog-footer { padding-left: 1rem !important; padding-right: 1rem !important; }
+    .os-dialog-actions { flex-direction: column-reverse; }
+    .os-dialog-actions .os-action-button { width: 100%; justify-content: center; }
 }
 
 /* ── Paginator ───────────────────────────────────────────── */
