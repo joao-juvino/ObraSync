@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
@@ -10,269 +12,122 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
     </f:facet>
-    <title>ObraSync - Gerenciamento de Vistorias</title>
-    <style>
-        :root {
-            --primary-color: #0284c7;
-            --primary-hover: #0369a1;
-            --surface-bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-        }
+    <title>ObraSync — Gerenciamento de Vistorias</title>
 
-        body {
-            background-color: var(--surface-bg);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+    <!-- CSS externo do ObraSync via JSF resource (suporte a cache-busting automatico) -->
+    <h:outputStylesheet library="css" name="style.css"/>
 
-        .header-navbar {
-            background-color: #0f172a;
-            color: #ffffff;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .header-brand i {
-            font-size: 1.75rem;
-            color: #38bdf8;
-        }
-
-        .header-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-            margin: 0;
-        }
-
-        .header-subtitle {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin: 0;
-        }
-
-        .main-container {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Dashboard KPI Cards */
-        .kpi-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
-
-        .kpi-card {
-            background-color: var(--card-bg);
-            border-radius: 0.75rem;
-            padding: 1.25rem 1.5rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .kpi-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .kpi-info h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .kpi-info .kpi-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0;
-            line-height: 1;
-        }
-
-        .kpi-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-
-        .kpi-total .kpi-icon { background: #e0f2fe; color: #0284c7; }
-        .kpi-aprovada .kpi-icon { background: #dcfce7; color: #16a34a; }
-        .kpi-pendente .kpi-icon { background: #fef3c7; color: #d97706; }
-        .kpi-reprovada .kpi-icon { background: #fee2e2; color: #dc2626; }
-
-        /* Card da Tabela */
-        .content-card {
-            background: var(--card-bg);
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-
-        .content-card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .content-card-title {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        /* Ajustes dos componentes PrimeFaces */
-        .ui-datatable thead th {
-            background: #f1f5f9 !important;
-            color: #334155 !important;
-            font-weight: 600 !important;
-            border-color: #e2e8f0 !important;
-        }
-
-        .ui-tag {
-            font-size: 0.85rem !important;
-            padding: 0.25rem 0.65rem !important;
-            font-weight: 600 !important;
-        }
-
-        .modal-form-grid .ui-outputlabel {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-            color: #334155;
-        }
-
-        .field-group {
-            margin-bottom: 1rem;
-        }
-    </style>
+    <!-- PrimeFlex 3 (CDN) para grid responsivo e utilitarios -->
+    <h:outputStylesheet name="https://unpkg.com/primeflex@3.3.1/primeflex.min.css"/>
 </h:head>
 
 <h:body>
-    <!-- Notificações Globais via Growl -->
-    <p:growl id="growl" showDetail="true" life="4500">
+
+    <!-- ================================================================
+         GROWL – notificacoes toast globais (posicionado abaixo da navbar)
+         ================================================================ -->
+    <p:growl id="growl" showDetail="true" life="4500" sticky="false">
         <p:autoUpdate/>
     </p:growl>
 
-    <!-- Top Navigation Bar -->
-    <header class="header-navbar">
-        <div class="header-brand">
-            <i class="pi pi-building"></i>
+    <!-- ================================================================
+         TOPBAR – cabecalho fixo com marca, usuario logado e logout
+         ================================================================ -->
+    <header class="os-topbar">
+        <!-- Brand -->
+        <div class="os-topbar__brand">
+            <i class="pi pi-building brand-icon"/>
             <div>
-                <h1 class="header-title">ObraSync</h1>
-                <p class="header-subtitle">Sistema Integrado de Gestão e Vistorias de Obras</p>
+                <span class="brand-name">ObraSync</span>
+                <span class="brand-tagline">Gestao Integrada de Obras e Vistorias</span>
             </div>
         </div>
-        <div class="header-actions">
-            <h:form id="formAcoesHeader">
-                <p:commandButton value="Nova Vistoria"
-                                 icon="pi pi-plus"
-                                 styleClass="ui-button-success"
-                                 actionListener="#{vistoriaBean.prepararNovo}"
-                                 update=":formDialog:painelDados"
-                                 oncomplete="PF('dialogVistoria').show()"/>
+
+        <!-- Usuario logado + Logout -->
+        <div class="os-topbar__right">
+            <div class="os-user-info">
+                <div class="user-avatar">
+                    <i class="pi pi-user"/>
+                </div>
+                <div>
+                    <span class="user-name">#{authBean.usuarioLogado.nome}</span>
+                    <span class="user-role">#{authBean.usuarioLogado.perfil.name()}</span>
+                </div>
+            </div>
+
+            <h:form id="formLogout">
+                <p:commandButton value="Sair"
+                                 icon="pi pi-sign-out"
+                                 styleClass="btn-logout"
+                                 ajax="false"
+                                 action="#{authBean.logout}"
+                                 title="Encerrar sessao"/>
             </h:form>
         </div>
     </header>
+    <!-- /TOPBAR -->
 
-    <main class="main-container">
-        <!-- Formulário Principal: Dashboard & Listagem de Vistorias -->
+    <!-- ================================================================
+         CONTEUDO PRINCIPAL
+         ================================================================ -->
+    <main class="os-main">
         <h:form id="formPrincipal">
 
-            <!-- KPIs Responsivos do Dashboard -->
-            <h:panelGroup id="painelKpis" layout="block" styleClass="kpi-container">
-                <div class="kpi-card kpi-total">
-                    <div class="kpi-info">
-                        <h4>Total de Vistorias</h4>
+            <!-- ── KPI Dashboard – grid 4 colunas → 2 em tablet → 1 em mobile ── -->
+            <h:panelGroup id="painelKpis" layout="block" styleClass="os-kpi-grid">
+
+                <!-- Total -->
+                <div class="os-kpi-card os-kpi-card--total">
+                    <div class="kpi-body">
+                        <p class="kpi-label">Total de Vistorias</p>
                         <p class="kpi-value">#{vistoriaBean.totalVistorias}</p>
                     </div>
-                    <div class="kpi-icon">
-                        <i class="pi pi-clipboard"></i>
-                    </div>
+                    <div class="kpi-badge"><i class="pi pi-clipboard"/></div>
                 </div>
 
-                <div class="kpi-card kpi-aprovada">
-                    <div class="kpi-info">
-                        <h4>Aprovadas</h4>
+                <!-- Aprovadas -->
+                <div class="os-kpi-card os-kpi-card--ok">
+                    <div class="kpi-body">
+                        <p class="kpi-label">Aprovadas</p>
                         <p class="kpi-value">#{vistoriaBean.aprovadasCount}</p>
                     </div>
-                    <div class="kpi-icon">
-                        <i class="pi pi-check-circle"></i>
-                    </div>
+                    <div class="kpi-badge"><i class="pi pi-check-circle"/></div>
                 </div>
 
-                <div class="kpi-card kpi-pendente">
-                    <div class="kpi-info">
-                        <h4>Pendentes</h4>
+                <!-- Pendentes -->
+                <div class="os-kpi-card os-kpi-card--warn">
+                    <div class="kpi-body">
+                        <p class="kpi-label">Pendentes</p>
                         <p class="kpi-value">#{vistoriaBean.pendentesCount}</p>
                     </div>
-                    <div class="kpi-icon">
-                        <i class="pi pi-clock"></i>
-                    </div>
+                    <div class="kpi-badge"><i class="pi pi-clock"/></div>
                 </div>
 
-                <div class="kpi-card kpi-reprovada">
-                    <div class="kpi-info">
-                        <h4>Reprovadas</h4>
+                <!-- Reprovadas -->
+                <div class="os-kpi-card os-kpi-card--danger">
+                    <div class="kpi-body">
+                        <p class="kpi-label">Reprovadas</p>
                         <p class="kpi-value">#{vistoriaBean.reprovadasCount}</p>
                     </div>
-                    <div class="kpi-icon">
-                        <i class="pi pi-times-circle"></i>
-                    </div>
+                    <div class="kpi-badge"><i class="pi pi-times-circle"/></div>
                 </div>
-            </h:panelGroup>
 
-            <!-- Card com a Tabela de Vistorias -->
-            <div class="content-card">
-                <div class="content-card-header">
-                    <h2 class="content-card-title">
-                        <i class="pi pi-list" style="color: var(--primary-color);"></i>
+            </h:panelGroup>
+            <!-- /KPI Dashboard -->
+
+            <!-- ── Tabela de Vistorias ─────────────────────────────────── -->
+            <div class="os-card">
+
+                <!-- Cabecalho do card -->
+                <div class="os-card__header">
+                    <h2 class="os-card__title">
+                        <i class="pi pi-list"/>
                         Quadro Geral de Vistorias
                     </h2>
-                    <div class="action-buttons">
-                        <p:commandButton value="Novo Cadastro"
+                    <div class="os-card__actions">
+                        <p:commandButton value="Nova Vistoria"
                                          icon="pi pi-plus"
-                                         styleClass="ui-button-primary"
+                                         styleClass="ui-button-success"
                                          actionListener="#{vistoriaBean.prepararNovo}"
                                          update=":formDialog:painelDados"
                                          oncomplete="PF('dialogVistoria').show()"/>
@@ -285,7 +140,7 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Dados com Filtros, Paginação e Badges Coloridos -->
+                <!-- DataTable responsiva com PrimeFaces reflow -->
                 <p:dataTable id="tabelaVistorias"
                              value="#{vistoriaBean.vistorias}"
                              var="item"
@@ -295,71 +150,89 @@
                              rows="10"
                              paginatorPosition="bottom"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             currentPageReportTemplate="Mostrando {startRecord} até {endRecord} de {totalRecords} vistorias"
-                             rowsPerPageTemplate="5,10,20,50"
+                             currentPageReportTemplate="Mostrando {startRecord} a {endRecord} de {totalRecords}"
+                             rowsPerPageTemplate="5,10,25,50"
                              emptyMessage="Nenhuma vistoria encontrada com os filtros aplicados."
                              reflow="true"
                              rowKey="#{item.id}"
-                             styleClass="ui-datatable-striped">
+                             styleClass="ui-datatable-striped ui-datatable-reflow">
 
-                    <!-- Coluna ID -->
-                    <p:column headerText="#" sortBy="#{item.id}" style="width: 70px; text-align: center;">
-                        <h:outputText value="#{item.id}" style="font-weight: 700; color: var(--text-secondary);"/>
+                    <!-- # ID -->
+                    <p:column headerText="#"
+                              sortBy="#{item.id}"
+                              style="width:60px; text-align:center;"
+                              responsivePriority="6">
+                        <h:outputText value="#{item.id}"
+                                      style="font-weight:700; color:var(--gray-500);"/>
                     </p:column>
 
-                    <!-- Coluna Obra com Filtro -->
+                    <!-- Obra -->
                     <p:column headerText="Obra / Empreendimento"
                               sortBy="#{item.obra.nome}"
                               filterBy="#{item.obra.nome}"
-                              filterMatchMode="contains">
-                        <h:outputText value="#{item.obra.nome}" style="font-weight: 600;"/>
+                              filterMatchMode="contains"
+                              responsivePriority="1">
+                        <h:outputText value="#{item.obra.nome}"
+                                      style="font-weight:600;"/>
                     </p:column>
 
-                    <!-- Coluna Tipo com Filtro por Seleção -->
-                    <p:column headerText="Tipo de Vistoria"
+                    <!-- Tipo -->
+                    <p:column headerText="Tipo"
                               sortBy="#{item.tipo.descricao}"
                               filterBy="#{item.tipo}"
-                              filterMatchMode="exact">
+                              filterMatchMode="exact"
+                              responsivePriority="3">
                         <f:facet name="filter">
-                            <p:selectOneMenu onchange="PF('dtVistorias').filter()" styleClass="ui-custom-filter">
+                            <p:selectOneMenu onchange="PF('dtVistorias').filter()"
+                                            styleClass="ui-column-filter">
                                 <f:selectItem itemLabel="Todos" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{vistoriaBean.tiposList}" var="t" itemLabel="#{t.descricao}" itemValue="#{t}"/>
+                                <f:selectItems value="#{vistoriaBean.tiposList}"
+                                               var="t" itemLabel="#{t.descricao}" itemValue="#{t}"/>
                             </p:selectOneMenu>
                         </f:facet>
                         <h:outputText value="#{item.tipo.descricao}"/>
                     </p:column>
 
-                    <!-- Coluna Responsável com Filtro -->
-                    <p:column headerText="Engenheiro / Responsável"
+                    <!-- Responsavel -->
+                    <p:column headerText="Responsavel"
                               sortBy="#{item.responsavel.nome}"
                               filterBy="#{item.responsavel.nome}"
-                              filterMatchMode="contains">
-                        <i class="pi pi-user" style="margin-right: 0.35rem; color: var(--text-secondary); font-size: 0.85rem;"></i>
+                              filterMatchMode="contains"
+                              responsivePriority="2">
+                        <i class="pi pi-user"
+                           style="margin-right:.35rem; color:var(--gray-500); font-size:.85rem;"/>
                         <h:outputText value="#{item.responsavel.nome}"/>
                     </p:column>
 
-                    <!-- Coluna Localização -->
-                    <p:column headerText="Localização / Pavimento">
+                    <!-- Localizacao (oculta em mobile pequeno) -->
+                    <p:column headerText="Localizacao / Pavimento"
+                              responsivePriority="5">
                         <h:outputText value="#{item.localizacao}"/>
                     </p:column>
 
-                    <!-- Coluna Data da Vistoria -->
-                    <p:column headerText="Data" sortBy="#{item.dataVistoria}" style="width: 120px; text-align: center;">
+                    <!-- Data -->
+                    <p:column headerText="Data"
+                              sortBy="#{item.dataVistoria}"
+                              style="width:110px; text-align:center;"
+                              responsivePriority="4">
                         <h:outputText value="#{item.dataVistoria}">
                             <f:convertDateTime pattern="dd/MM/yyyy" type="localDate"/>
                         </h:outputText>
                     </p:column>
 
-                    <!-- Coluna Status com Badge Colorido PrimeFaces (p:tag) -->
+                    <!-- Status com badge colorido -->
                     <p:column headerText="Status"
                               sortBy="#{item.status.descricao}"
                               filterBy="#{item.status}"
                               filterMatchMode="exact"
-                              style="width: 145px; text-align: center;">
+                              style="width:130px; text-align:center;"
+                              responsivePriority="1">
                         <f:facet name="filter">
-                            <p:selectOneMenu onchange="PF('dtVistorias').filter()" styleClass="ui-custom-filter">
+                            <p:selectOneMenu onchange="PF('dtVistorias').filter()"
+                                            styleClass="ui-column-filter">
                                 <f:selectItem itemLabel="Todos" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{vistoriaBean.statusList}" var="s" itemLabel="#{s.descricao}" itemValue="#{s}"/>
+                                <f:selectItems value="#{vistoriaBean.statusList}"
+                                               var="s" itemLabel="#{s.descricao}" itemValue="#{s}"/>
                             </p:selectOneMenu>
                         </f:facet>
                         <p:tag value="#{item.status.descricao}"
@@ -368,8 +241,10 @@
                                rounded="true"/>
                     </p:column>
 
-                    <!-- Coluna Ações (Baixar PDF, Editar e Excluir) -->
-                    <p:column headerText="Ações" style="width: 165px; text-align: center;">
+                    <!-- Acoes -->
+                    <p:column headerText="Acoes"
+                              style="width:150px; text-align:center;"
+                              responsivePriority="2">
                         <p:commandButton icon="pi pi-file-pdf"
                                          title="Baixar Laudo PDF"
                                          styleClass="ui-button-rounded ui-button-help ui-button-flat"
@@ -388,23 +263,29 @@
                                          styleClass="ui-button-rounded ui-button-danger ui-button-flat"
                                          actionListener="#{vistoriaBean.excluir(item)}"
                                          update="@form">
-                            <p:confirm header="Confirmar Exclusão"
-                                       message="Deseja realmente excluir a vistoria da obra '#{item.obra.nome}'?"
+                            <p:confirm header="Confirmar Exclusao"
+                                       message="Deseja excluir a vistoria da obra '#{item.obra.nome}'?"
                                        icon="pi pi-exclamation-triangle"/>
                         </p:commandButton>
                     </p:column>
+
                 </p:dataTable>
             </div>
+            <!-- /Tabela -->
+
         </h:form>
     </main>
+    <!-- /CONTEUDO PRINCIPAL -->
 
-    <!-- Modal Responsivo (p:dialog) para Cadastrar e Editar Vistorias -->
+    <!-- ================================================================
+         DIALOG – Cadastrar / Editar Vistoria (responsivo com PrimeFlex)
+         ================================================================ -->
     <p:dialog id="dialogVistoria"
               widgetVar="dialogVistoria"
-              header="#{vistoriaBean.vistoria.id == null ? 'Nova Vistoria de Obra' : 'Editar Vistoria'}"
+              header="#{vistoriaBean.vistoria.id == null ? 'Nova Vistoria' : 'Editar Vistoria'}"
               modal="true"
               responsive="true"
-              width="680px"
+              width="700"
               showEffect="fade"
               hideEffect="fade"
               closeOnEscape="true"
@@ -412,106 +293,128 @@
               appendTo="@(body)">
 
         <h:form id="formDialog">
-            <p:outputPanel id="painelDados" styleClass="ui-fluid modal-form-grid">
-                <div class="field-group">
+            <p:outputPanel id="painelDados" styleClass="ui-fluid">
+
+                <!-- Campo: Obra (linha inteira) -->
+                <div class="os-field">
                     <p:outputLabel for="obra" value="Obra / Empreendimento *"/>
                     <p:inputText id="obra"
                                  value="#{vistoriaBean.vistoria.obra.nome}"
                                  required="true"
-                                 requiredMessage="O campo Obra é obrigatório."
+                                 requiredMessage="O campo Obra e obrigatorio."
                                  placeholder="Ex: Residencial Jardins das Oliveiras"/>
                 </div>
 
-                <div class="p-formgrid p-grid" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <div class="field-group" style="flex: 1; min-width: 250px;">
-                        <p:outputLabel for="responsavel" value="Engenheiro / Responsável Técnico *"/>
-                        <p:inputText id="responsavel"
-                                     value="#{vistoriaBean.vistoria.responsavel.nome}"
-                                     required="true"
-                                     requiredMessage="O Responsável Técnico é obrigatório."
-                                     placeholder="Ex: Eng. Carlos Ramos"/>
-                    </div>
-
-                    <div class="field-group" style="flex: 1; min-width: 250px;">
-                        <p:outputLabel for="tipo" value="Tipo de Vistoria *"/>
-                        <p:selectOneMenu id="tipo"
-                                         value="#{vistoriaBean.vistoria.tipo}"
+                <!-- Linha 2: Responsavel + Tipo (50/50 em desktop, 100 em mobile) -->
+                <div class="p-grid p-formgrid">
+                    <div class="p-col-12 p-md-6">
+                        <div class="os-field">
+                            <p:outputLabel for="responsavel" value="Engenheiro / Responsavel *"/>
+                            <p:inputText id="responsavel"
+                                         value="#{vistoriaBean.vistoria.responsavel.nome}"
                                          required="true"
-                                         requiredMessage="Selecione o tipo de vistoria.">
-                            <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{vistoriaBean.tiposList}"
-                                           var="tipo"
-                                           itemLabel="#{tipo.descricao}"
-                                           itemValue="#{tipo}"/>
-                        </p:selectOneMenu>
+                                         requiredMessage="O Responsavel Tecnico e obrigatorio."
+                                         placeholder="Ex: Eng. Carlos Ramos"/>
+                        </div>
+                    </div>
+                    <div class="p-col-12 p-md-6">
+                        <div class="os-field">
+                            <p:outputLabel for="tipo" value="Tipo de Vistoria *"/>
+                            <p:selectOneMenu id="tipo"
+                                             value="#{vistoriaBean.vistoria.tipo}"
+                                             required="true"
+                                             requiredMessage="Selecione o tipo de vistoria.">
+                                <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{vistoriaBean.tiposList}"
+                                               var="t" itemLabel="#{t.descricao}" itemValue="#{t}"/>
+                            </p:selectOneMenu>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-formgrid p-grid" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <div class="field-group" style="flex: 1; min-width: 250px;">
-                        <p:outputLabel for="data" value="Data da Vistoria *"/>
-                        <p:datePicker id="data"
-                                      value="#{vistoriaBean.vistoria.dataVistoria}"
-                                      pattern="dd/MM/yyyy"
-                                      showIcon="true"
-                                      required="true"
-                                      requiredMessage="A Data da Vistoria é obrigatória."/>
+                <!-- Linha 3: Data + Status (50/50) -->
+                <div class="p-grid p-formgrid">
+                    <div class="p-col-12 p-md-6">
+                        <div class="os-field">
+                            <p:outputLabel for="data" value="Data da Vistoria *"/>
+                            <p:datePicker id="data"
+                                          value="#{vistoriaBean.vistoria.dataVistoria}"
+                                          pattern="dd/MM/yyyy"
+                                          showIcon="true"
+                                          required="true"
+                                          requiredMessage="A Data da Vistoria e obrigatoria."
+                                          touchUI="true"/>
+                        </div>
                     </div>
-
-                    <div class="field-group" style="flex: 1; min-width: 250px;">
-                        <p:outputLabel for="status" value="Status da Vistoria *"/>
-                        <p:selectOneMenu id="status"
-                                         value="#{vistoriaBean.vistoria.status}"
-                                         required="true"
-                                         requiredMessage="Selecione o status da vistoria.">
-                            <f:selectItems value="#{vistoriaBean.statusList}"
-                                           var="status"
-                                           itemLabel="#{status.descricao}"
-                                           itemValue="#{status}"/>
-                        </p:selectOneMenu>
+                    <div class="p-col-12 p-md-6">
+                        <div class="os-field">
+                            <p:outputLabel for="status" value="Status da Vistoria *"/>
+                            <p:selectOneMenu id="status"
+                                             value="#{vistoriaBean.vistoria.status}"
+                                             required="true"
+                                             requiredMessage="Selecione o status.">
+                                <f:selectItems value="#{vistoriaBean.statusList}"
+                                               var="s" itemLabel="#{s.descricao}" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+                        </div>
                     </div>
                 </div>
 
-                <div class="field-group">
-                    <p:outputLabel for="localizacao" value="Localização / Pavimento"/>
+                <!-- Linha 4: Localizacao -->
+                <div class="os-field">
+                    <p:outputLabel for="localizacao" value="Localizacao / Pavimento"/>
                     <p:inputText id="localizacao"
                                  value="#{vistoriaBean.vistoria.localizacao}"
-                                 placeholder="Ex: Bloco B - 5º Andar / Hall Principal"/>
+                                 placeholder="Ex: Bloco B - 5 Andar / Hall Principal"/>
                 </div>
 
-                <div class="field-group">
-                    <p:outputLabel for="observacoes" value="Parecer Técnico / Observações"/>
+                <!-- Linha 5: Observacoes -->
+                <div class="os-field">
+                    <p:outputLabel for="observacoes" value="Parecer Tecnico / Observacoes"/>
                     <p:inputTextarea id="observacoes"
                                      value="#{vistoriaBean.vistoria.observacoes}"
                                      rows="4"
-                                     placeholder="Descreva conformidades, não-conformidades ou detalhes técnicos identificados na vistoria..."/>
+                                     autoResize="false"
+                                     placeholder="Descreva conformidades, nao-conformidades ou detalhes tecnicos..."/>
                 </div>
+
             </p:outputPanel>
 
+            <!-- Footer do dialog com botoes (flex, responsivo) -->
             <f:facet name="footer">
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                <div class="p-d-flex p-jc-end p-flex-wrap" style="gap:.5rem; padding-top:.25rem;">
                     <p:commandButton value="Cancelar"
                                      icon="pi pi-times"
                                      type="button"
                                      onclick="PF('dialogVistoria').hide()"
                                      styleClass="ui-button-secondary ui-button-outlined"/>
 
-                    <!-- Botão de Salvamento com AJAX assíncrono via update="@form" e sincronização dos componentes -->
                     <p:commandButton value="Salvar Vistoria"
                                      icon="pi pi-check"
                                      actionListener="#{vistoriaBean.salvar}"
                                      update="@form :formPrincipal:tabelaVistorias :formPrincipal:painelKpis"
                                      oncomplete="if (!args.validationFailed) PF('dialogVistoria').hide()"
-                                     styleClass="ui-button-primary"/>
+                                     styleClass="ui-button-success"/>
                 </div>
             </f:facet>
         </h:form>
     </p:dialog>
 
-    <!-- Diálogo Global de Confirmação para Exclusão -->
-    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade" responsive="true" width="380">
-        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-secondary ui-button-flat"/>
-        <p:commandButton value="Sim, Excluir" type="button" styleClass="ui-confirmdialog-yes ui-button-danger"/>
+    <!-- ================================================================
+         CONFIRM DIALOG – confirmacao global de exclusao
+         ================================================================ -->
+    <p:confirmDialog global="true"
+                     showEffect="fade"
+                     hideEffect="fade"
+                     responsive="true"
+                     width="380">
+        <p:commandButton value="Nao"
+                         type="button"
+                         styleClass="ui-confirmdialog-no ui-button-secondary ui-button-flat"/>
+        <p:commandButton value="Sim, Excluir"
+                         type="button"
+                         styleClass="ui-confirmdialog-yes ui-button-danger"/>
     </p:confirmDialog>
+
 </h:body>
 </html>

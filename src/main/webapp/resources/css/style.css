@@ -1,0 +1,441 @@
+/* ============================================================
+   ObraSync – style.css
+   Paleta: azul corporativo (#1e3a5f / #2563eb) + cinza escuro
+   Compativel com PrimeFaces 12 + PrimeFlex 3
+   ============================================================ */
+
+/* ── Variaveis de design ─────────────────────────────────── */
+:root {
+    --brand-900:   #0f172a;
+    --brand-800:   #1e3a5f;
+    --brand-600:   #1d4ed8;
+    --brand-500:   #2563eb;
+    --brand-400:   #3b82f6;
+    --brand-100:   #dbeafe;
+    --brand-50:    #eff6ff;
+
+    --gray-900:    #111827;
+    --gray-700:    #374151;
+    --gray-500:    #6b7280;
+    --gray-300:    #d1d5db;
+    --gray-100:    #f3f4f6;
+    --gray-50:     #f9fafb;
+
+    --success:     #16a34a;
+    --success-bg:  #dcfce7;
+    --warning:     #d97706;
+    --warning-bg:  #fef3c7;
+    --danger:      #dc2626;
+    --danger-bg:   #fee2e2;
+
+    --surface-bg:  #f1f5f9;
+    --card-bg:     #ffffff;
+    --border:      #e5e7eb;
+    --radius-md:   0.625rem;
+    --radius-lg:   0.875rem;
+    --shadow-sm:   0 1px 3px 0 rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.07);
+    --shadow-md:   0 4px 6px -1px rgba(0,0,0,.08), 0 2px 4px -2px rgba(0,0,0,.08);
+    --shadow-lg:   0 10px 24px -3px rgba(0,0,0,.12), 0 4px 8px -4px rgba(0,0,0,.1);
+    --transition:  all .18s ease;
+}
+
+/* ── Reset & base ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--surface-bg);
+    color: var(--gray-900);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Topbar / Navbar ─────────────────────────────────────── */
+.os-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--brand-900);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 1.75rem;
+    height: 62px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+
+.os-topbar__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    flex-shrink: 0;
+}
+
+.os-topbar__brand .brand-icon {
+    font-size: 1.6rem;
+    color: var(--brand-400);
+}
+
+.os-topbar__brand .brand-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #fff;
+}
+
+.os-topbar__brand .brand-tagline {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    display: block;
+    line-height: 1.2;
+}
+
+.os-topbar__right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.os-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+}
+
+.os-user-info .user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--brand-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.os-user-info .user-name {
+    font-weight: 600;
+    color: #e2e8f0;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.os-user-info .user-role {
+    font-size: 0.7rem;
+    color: #64748b;
+    display: block;
+    line-height: 1.2;
+}
+
+/* Botao logout customizado */
+.btn-logout.ui-button {
+    background: transparent !important;
+    border: 1.5px solid #334155 !important;
+    color: #94a3b8 !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.35rem 0.85rem !important;
+    font-size: 0.8rem !important;
+    transition: var(--transition) !important;
+}
+.btn-logout.ui-button:hover {
+    background: rgba(239,68,68,.15) !important;
+    border-color: #ef4444 !important;
+    color: #f87171 !important;
+}
+
+/* ── Layout principal ────────────────────────────────────── */
+.os-main {
+    padding: 1.75rem 2rem;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .os-main {
+        padding: 1rem;
+    }
+    .os-topbar {
+        padding: 0 1rem;
+    }
+    .os-user-info .user-name,
+    .os-user-info .user-role {
+        display: none;
+    }
+}
+
+/* ── KPI Cards ───────────────────────────────────────────── */
+.os-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.1rem;
+    margin-bottom: 1.75rem;
+}
+
+@media (max-width: 1024px) { .os-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px)  { .os-kpi-grid { grid-template-columns: 1fr; } }
+
+.os-kpi-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    overflow: hidden;
+    position: relative;
+}
+
+.os-kpi-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+}
+
+.os-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.os-kpi-card--total::before  { background: var(--brand-500); }
+.os-kpi-card--ok::before     { background: var(--success); }
+.os-kpi-card--warn::before   { background: var(--warning); }
+.os-kpi-card--danger::before { background: var(--danger); }
+
+.kpi-body { flex: 1; }
+
+.kpi-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    margin: 0 0 0.4rem;
+}
+
+.kpi-value {
+    font-size: 2.15rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    line-height: 1;
+    margin: 0;
+}
+
+.kpi-badge {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.os-kpi-card--total  .kpi-badge { background: var(--brand-100); color: var(--brand-600); }
+.os-kpi-card--ok     .kpi-badge { background: var(--success-bg); color: var(--success); }
+.os-kpi-card--warn   .kpi-badge { background: var(--warning-bg); color: var(--warning); }
+.os-kpi-card--danger .kpi-badge { background: var(--danger-bg);  color: var(--danger); }
+
+/* ── Content card (tabela) ───────────────────────────────── */
+.os-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.os-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--gray-50);
+}
+
+.os-card__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brand-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.os-card__title .pi {
+    color: var(--brand-500);
+    font-size: 1.1rem;
+}
+
+.os-card__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ── DataTable overrides ─────────────────────────────────── */
+.ui-datatable .ui-datatable-header { display: none; }
+
+.ui-datatable thead th {
+    background: var(--brand-50) !important;
+    color: var(--brand-800) !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    border-color: var(--border) !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.ui-datatable tbody td {
+    padding: 0.85rem 1rem !important;
+    border-color: var(--border) !important;
+    font-size: 0.9rem !important;
+    vertical-align: middle !important;
+}
+
+.ui-datatable-striped tbody tr:nth-child(even) td {
+    background: var(--gray-50) !important;
+}
+
+.ui-datatable tbody tr:hover td {
+    background: var(--brand-50) !important;
+    transition: background 0.15s;
+}
+
+/* Filtros na coluna */
+.ui-column-filter { width: 100% !important; }
+
+/* ── Tags / badges ───────────────────────────────────────── */
+.ui-tag {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.04em !important;
+    padding: 0.28rem 0.65rem !important;
+    border-radius: 99px !important;
+}
+
+/* ── Dialog / Modal ──────────────────────────────────────── */
+.ui-dialog {
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: none !important;
+}
+
+.ui-dialog .ui-dialog-titlebar {
+    background: var(--brand-800) !important;
+    color: #fff !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    padding: 1rem 1.4rem !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+.ui-dialog .ui-dialog-titlebar-close {
+    color: #94a3b8 !important;
+}
+
+.ui-dialog .ui-dialog-content {
+    padding: 1.4rem !important;
+}
+
+.ui-dialog .ui-dialog-footer {
+    padding: 1rem 1.4rem !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--gray-50) !important;
+}
+
+/* ── Form fields (modal) ─────────────────────────────────── */
+.os-field {
+    margin-bottom: 1.1rem;
+}
+
+.os-field .ui-outputlabel {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.02em;
+}
+
+.os-field .ui-inputtext,
+.os-field .ui-inputtextarea,
+.os-field .ui-selectonemenu {
+    width: 100% !important;
+    border-radius: var(--radius-md) !important;
+    border: 1.5px solid var(--gray-300) !important;
+    padding: 0.55rem 0.8rem !important;
+    font-size: 0.9rem !important;
+    transition: border-color .18s, box-shadow .18s !important;
+}
+
+.os-field .ui-inputtext:focus,
+.os-field .ui-inputtextarea:focus {
+    border-color: var(--brand-500) !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12) !important;
+    outline: none !important;
+}
+
+/* ── Botoes primarios globais ────────────────────────────── */
+.btn-primary.ui-button  { background: var(--brand-600) !important; border-color: var(--brand-600) !important; }
+.btn-primary.ui-button:hover { background: var(--brand-500) !important; border-color: var(--brand-500) !important; }
+
+/* ── Responsividade da tabela em mobile ──────────────────── */
+@media (max-width: 640px) {
+    .ui-datatable-reflow thead { display: none; }
+    .ui-datatable-reflow tbody td {
+        display: block !important;
+        width: 100% !important;
+        text-align: right !important;
+    }
+    .ui-datatable-reflow tbody td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: 700;
+        color: var(--brand-800);
+    }
+    .os-card__header { flex-direction: column; align-items: flex-start; }
+    .os-card__actions { width: 100%; }
+    .os-card__actions .ui-button { flex: 1; justify-content: center; }
+}
+
+/* ── Paginator ───────────────────────────────────────────── */
+.ui-paginator {
+    background: var(--gray-50) !important;
+    border-top: 1px solid var(--border) !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important;
+}
+
+.ui-paginator .ui-paginator-page.ui-state-active {
+    background: var(--brand-600) !important;
+    border-color: var(--brand-600) !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+}
+
+/* ── Growl / Toast ───────────────────────────────────────── */
+.ui-growl { top: 72px !important; }
