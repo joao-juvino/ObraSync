@@ -51,6 +51,20 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Implementação JAX-RS para execução de testes unitários fora do container -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>2.39.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.39.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

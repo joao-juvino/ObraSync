@@ -1,5 +1,6 @@
 package com.obrasync.model;
 
+import javax.json.bind.annotation.JsonbDateFormat;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -15,7 +16,10 @@ public class Vistoria implements Serializable, Cloneable {
     private String obra;
     private String responsavel;
     private TipoVistoria tipo;
+
+    @JsonbDateFormat("yyyy-MM-dd")
     private LocalDate dataVistoria;
+
     private StatusVistoria status;
     private String localizacao;
     private String observacoes;
