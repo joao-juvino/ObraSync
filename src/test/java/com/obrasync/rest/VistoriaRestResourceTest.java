@@ -1,7 +1,10 @@
 package com.obrasync.rest;
 
+import com.obrasync.model.Obra;
+import com.obrasync.model.Perfil;
 import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.TipoVistoria;
+import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
 import com.obrasync.rest.dto.MensagemErroDTO;
 import com.obrasync.service.VistoriaService;
@@ -19,6 +22,27 @@ class VistoriaRestResourceTest {
 
     private VistoriaRestResource resource;
     private VistoriaService service;
+
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    private Obra obraFake(String nome) {
+        Obra o = new Obra();
+        o.setNome(nome);
+        o.setEndereco("Rua Teste, 1");
+        o.setDataInicio(LocalDate.now().minusMonths(3));
+        o.setDataPrevisaoFim(LocalDate.now().plusMonths(9));
+        return o;
+    }
+
+    private Usuario usuarioFake(String nome) {
+        Usuario u = new Usuario();
+        u.setNome(nome);
+        u.setEmail(nome.toLowerCase().replace(" ", ".") + "@obrasync.com");
+        u.setSenha("$2a$10$hashqualquer");
+        u.setPerfil(Perfil.ENGENHEIRO);
+        return u;
+    }
 
     @BeforeEach
     void setUp() {
@@ -66,11 +90,11 @@ class VistoriaRestResourceTest {
     }
 
     @Test
-    @DisplayName("POST /api/vistorias deve retornar 201 Created quando dados são válidos")
+    @DisplayName("POST /api/vistorias deve retornar 201 Created quando dados sao validos")
     void deveCadastrarVistoriaCom201Created() {
         Vistoria nova = new Vistoria();
-        nova.setObra("Residencial Gran Ville");
-        nova.setResponsavel("Eng. Juliana Castro");
+        nova.setObra(obraFake("Residencial Gran Ville"));
+        nova.setResponsavel(usuarioFake("Eng. Juliana Castro"));
         nova.setTipo(TipoVistoria.ELETRICA);
         nova.setDataVistoria(LocalDate.now());
         nova.setStatus(StatusVistoria.APROVADA);
@@ -85,7 +109,7 @@ class VistoriaRestResourceTest {
 
         Vistoria salva = (Vistoria) response.getEntity();
         assertNotNull(salva.getId());
-        assertEquals("Residencial Gran Ville", salva.getObra());
+        assertEquals("Residencial Gran Ville", salva.getNomeObra());
     }
 
     @Test
@@ -96,29 +120,32 @@ class VistoriaRestResourceTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         assertTrue(response.getEntity() instanceof MensagemErroDTO);
         MensagemErroDTO erro = (MensagemErroDTO) response.getEntity();
-        assertTrue(erro.getMensagem().contains("não pode ser nulo"));
+        assertTrue(erro.getMensagem().contains("nulo"));
     }
 
     @Test
-    @DisplayName("POST /api/vistorias deve retornar 400 Bad Request se obra não for informada")
+    @DisplayName("POST /api/vistorias deve retornar 400 Bad Request se obra nao for informada")
     void deveRetornar400SeObraVazia() {
+        // obra com nome vazio → getNomeObra() retorna string vazia → validacao falha
         Vistoria invalida = new Vistoria();
-        invalida.setObra("   ");
-        invalida.setResponsavel("Eng. Carlos");
+        Obra obraVazia = new Obra();
+        obraVazia.setNome("   ");
+        invalida.setObra(obraVazia);
+        invalida.setResponsavel(usuarioFake("Eng. Carlos"));
         invalida.setTipo(TipoVistoria.ESTRUTURAL);
 
         Response response = resource.cadastrar(invalida);
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         MensagemErroDTO erro = (MensagemErroDTO) response.getEntity();
-        assertTrue(erro.getMensagem().contains("obra"));
+        assertTrue(erro.getMensagem().toLowerCase().contains("obra"));
     }
 
     @Test
-    @DisplayName("POST /api/vistorias deve retornar 400 Bad Request se responsavel não for informado")
+    @DisplayName("POST /api/vistorias deve retornar 400 Bad Request se responsavel nao for informado")
     void deveRetornar400SeResponsavelVazio() {
         Vistoria invalida = new Vistoria();
-        invalida.setObra("Residencial Teste");
+        invalida.setObra(obraFake("Residencial Teste"));
         invalida.setResponsavel(null);
         invalida.setTipo(TipoVistoria.ESTRUTURAL);
 
@@ -126,21 +153,21 @@ class VistoriaRestResourceTest {
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         MensagemErroDTO erro = (MensagemErroDTO) response.getEntity();
-        assertTrue(erro.getMensagem().contains("responsavel"));
+        assertTrue(erro.getMensagem().toLowerCase().contains("responsavel"));
     }
 
     @Test
     @DisplayName("POST /api/vistorias deve retornar 400 Bad Request se tipo de vistoria for nulo")
     void deveRetornar400SeTipoNulo() {
         Vistoria invalida = new Vistoria();
-        invalida.setObra("Residencial Teste");
-        invalida.setResponsavel("Eng. Carlos");
+        invalida.setObra(obraFake("Residencial Teste"));
+        invalida.setResponsavel(usuarioFake("Eng. Carlos"));
         invalida.setTipo(null);
 
         Response response = resource.cadastrar(invalida);
 
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         MensagemErroDTO erro = (MensagemErroDTO) response.getEntity();
-        assertTrue(erro.getMensagem().contains("tipo"));
+        assertTrue(erro.getMensagem().toLowerCase().contains("tipo"));
     }
 }

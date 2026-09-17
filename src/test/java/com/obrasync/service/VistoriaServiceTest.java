@@ -1,7 +1,10 @@
 package com.obrasync.service;
 
+import com.obrasync.model.Obra;
+import com.obrasync.model.Perfil;
 import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.TipoVistoria;
+import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,6 +18,24 @@ import static org.junit.jupiter.api.Assertions.*;
 class VistoriaServiceTest {
 
     private VistoriaService vistoriaService;
+
+    private Obra obraFake(String nome) {
+        Obra o = new Obra();
+        o.setNome(nome);
+        o.setEndereco("Av. Paulista, 1000");
+        o.setDataInicio(LocalDate.now().minusMonths(4));
+        o.setDataPrevisaoFim(LocalDate.now().plusMonths(8));
+        return o;
+    }
+
+    private Usuario usuarioFake(String nome) {
+        Usuario u = new Usuario();
+        u.setNome(nome);
+        u.setEmail(nome.toLowerCase().replace(" ", ".") + "@obrasync.com");
+        u.setSenha("$2a$10$hashqualquer");
+        u.setPerfil(Perfil.ENGENHEIRO);
+        return u;
+    }
 
     @BeforeEach
     void setUp() {
@@ -34,23 +55,23 @@ class VistoriaServiceTest {
     @DisplayName("Deve salvar uma nova vistoria com sucesso")
     void deveSalvarNovaVistoria() {
         Vistoria nova = new Vistoria();
-        nova.setObra("Residencial Aurora");
-        nova.setResponsavel("Eng. Juliana Castro");
+        nova.setObra(obraFake("Residencial Aurora"));
+        nova.setResponsavel(usuarioFake("Eng. Juliana Castro"));
         nova.setTipo(TipoVistoria.ELETRICA);
         nova.setDataVistoria(LocalDate.now());
         nova.setStatus(StatusVistoria.APROVADA);
         nova.setLocalizacao("Bloco C - Subsolo");
-        nova.setObservacoes("Subestação abrigada em conformidade.");
+        nova.setObservacoes("Subestacao abrigada em conformidade.");
 
         Vistoria salva = vistoriaService.salvar(nova);
 
         assertNotNull(salva.getId());
-        assertEquals("Residencial Aurora", salva.getObra());
+        assertEquals("Residencial Aurora", salva.getNomeObra());
         assertEquals(StatusVistoria.APROVADA, salva.getStatus());
 
         Vistoria encontrada = vistoriaService.buscarPorId(salva.getId());
         assertNotNull(encontrada);
-        assertEquals("Residencial Aurora", encontrada.getObra());
+        assertEquals("Residencial Aurora", encontrada.getNomeObra());
     }
 
     @Test

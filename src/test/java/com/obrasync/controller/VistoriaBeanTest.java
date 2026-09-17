@@ -1,8 +1,12 @@
 package com.obrasync.controller;
 
+import com.obrasync.model.Obra;
+import com.obrasync.model.Perfil;
 import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.TipoVistoria;
+import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
+import com.obrasync.report.RelatorioService;
 import com.obrasync.service.VistoriaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,13 +17,32 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.obrasync.report.RelatorioService;
-
 class VistoriaBeanTest {
 
     private VistoriaBean bean;
     private VistoriaService service;
     private RelatorioService relatorioService;
+
+    // Helpers reutilizados nos testes
+    private Obra obraFake() {
+        Obra o = new Obra();
+        o.setId(1L);
+        o.setNome("Obra Teste");
+        o.setEndereco("Rua Teste, 100");
+        o.setDataInicio(LocalDate.now().minusMonths(6));
+        o.setDataPrevisaoFim(LocalDate.now().plusMonths(6));
+        return o;
+    }
+
+    private Usuario usuarioFake() {
+        Usuario u = new Usuario();
+        u.setId(1L);
+        u.setNome("Eng. Teste");
+        u.setEmail("engenheiro@obrasync.com");
+        u.setSenha("$2a$10$hashqualquer");
+        u.setPerfil(Perfil.ENGENHEIRO);
+        return u;
+    }
 
     @BeforeEach
     void setUp() {
@@ -35,7 +58,7 @@ class VistoriaBeanTest {
     }
 
     @Test
-    @DisplayName("Deve inicializar o bean com listagem e formulário novo")
+    @DisplayName("Deve inicializar o bean com listagem e formulario novo")
     void deveInicializarBean() {
         assertNotNull(bean.getVistorias());
         assertFalse(bean.getVistorias().isEmpty());
@@ -45,7 +68,7 @@ class VistoriaBeanTest {
     }
 
     @Test
-    @DisplayName("Deve preparar novo cadastro e preparar edição preservando dados")
+    @DisplayName("Deve preparar novo cadastro e preparar edicao preservando dados")
     void devePrepararNovoEEdicao() {
         bean.prepararNovo();
         assertNull(bean.getVistoria().getId());
@@ -58,7 +81,9 @@ class VistoriaBeanTest {
         assertEquals(selecionada.getObra(), bean.getVistoria().getObra());
 
         // Altera o clone no bean sem alterar imediatamente o item da lista
-        bean.getVistoria().setObra("Obra Modificada no Modal");
+        Obra obraModificada = obraFake();
+        obraModificada.setNome("Obra Modificada no Modal");
+        bean.getVistoria().setObra(obraModificada);
         assertNotEquals(bean.getVistoria().getObra(), selecionada.getObra());
     }
 
@@ -68,8 +93,8 @@ class VistoriaBeanTest {
         int totalAntes = bean.getVistorias().size();
 
         bean.prepararNovo();
-        bean.getVistoria().setObra("Condomínio Esmeralda");
-        bean.getVistoria().setResponsavel("Eng. Patrícia Lima");
+        bean.getVistoria().setObra(obraFake());
+        bean.getVistoria().setResponsavel(usuarioFake());
         bean.getVistoria().setTipo(TipoVistoria.ACABAMENTO);
         bean.getVistoria().setStatus(StatusVistoria.APROVADA);
         bean.getVistoria().setDataVistoria(LocalDate.now());
@@ -77,7 +102,7 @@ class VistoriaBeanTest {
         bean.salvar();
 
         assertEquals(totalAntes + 1, bean.getVistorias().size());
-        assertNull(bean.getVistoria().getId(), "Após salvar deve resetar para nova vistoria");
+        assertNull(bean.getVistoria().getId(), "Apos salvar deve resetar para nova vistoria");
     }
 
     @Test
@@ -92,7 +117,7 @@ class VistoriaBeanTest {
     }
 
     @Test
-    @DisplayName("Deve expor métricas e listas de enums")
+    @DisplayName("Deve expor metricas e listas de enums")
     void deveExporMetricasEEnums() {
         assertTrue(bean.getTotalVistorias() > 0);
         assertTrue(bean.getAprovadasCount() > 0);
@@ -102,7 +127,7 @@ class VistoriaBeanTest {
     }
 
     @Test
-    @DisplayName("Deve executar método baixarLaudoPdf de forma segura quando fora do container web")
+    @DisplayName("Deve executar metodo baixarLaudoPdf de forma segura quando fora do container web")
     void deveExecutarBaixarLaudoPdf() {
         Vistoria vistoria = bean.getVistorias().get(0);
         assertDoesNotThrow(() -> bean.baixarLaudoPdf(vistoria));
