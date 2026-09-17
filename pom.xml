@@ -88,6 +88,39 @@
             <artifactId>flyway-core</artifactId>
             <version>9.22.3</version>
         </dependency>
+
+        <!--
+            JJWT – geração e validação de tokens JWT (HMAC-SHA256).
+            Versão 0.11.5: última série compatível com Java 11.
+            Três artefatos: api (compilação), impl + jackson (runtime no WAR).
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            jbcrypt 0.4 – verificação de hash BCrypt sem dependências externas.
+            Compatível com hashes $2a$ gerados pelo Flyway (V2__insert_initial_data.sql).
+        -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
 
     <build>

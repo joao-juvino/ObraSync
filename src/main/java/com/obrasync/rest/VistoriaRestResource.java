@@ -3,6 +3,7 @@ package com.obrasync.rest;
 import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.Vistoria;
 import com.obrasync.rest.dto.MensagemErroDTO;
+import com.obrasync.security.Secured;
 import com.obrasync.service.VistoriaService;
 
 import javax.enterprise.context.RequestScoped;
@@ -19,7 +20,11 @@ import java.util.List;
 /**
  * Endpoint REST para integração com aplicativos móveis e sistemas de campo.
  * Permite a consulta e o envio de laudos e vistorias de obras.
+ *
+ * Todos os endpoints desta classe exigem autenticacao via JWT (@Secured).
+ * Envie o token no header: Authorization: Bearer <token>
  */
+@Secured
 @Path("/vistorias")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

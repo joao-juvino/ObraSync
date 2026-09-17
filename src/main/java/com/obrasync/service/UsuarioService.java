@@ -2,6 +2,7 @@ package com.obrasync.service;
 
 import com.obrasync.model.Perfil;
 import com.obrasync.model.Usuario;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -99,6 +100,31 @@ public class UsuarioService implements Serializable {
                 em.remove(usuario);
             }
         }
+    }
+
+    /**
+     * Autentica um usuario verificando email e hash BCrypt da senha.
+     *
+     * @param email email do usuario (case-insensitive)
+     * @param senha senha em texto puro a ser verificada contra o hash armazenado
+     * @return o Usuario autenticado, ou null se as credenciais forem invalidas
+     */
+    public Usuario autenticar(String email, String senha) {
+        if (email == null || email.trim().isEmpty() || senha == null || senha.isEmpty()) {
+            return null;
+        }
+        Usuario usuario = buscarPorEmail(email);
+        if (usuario == null) {
+            return null;
+        }
+        try {
+            if (BCrypt.checkpw(senha, usuario.getSenha())) {
+                return usuario;
+            }
+        } catch (IllegalArgumentException e) {
+            // Hash armazenado com formato invalido — log e retorna null
+        }
+        return null;
     }
 
     public void setEntityManager(EntityManager em) {

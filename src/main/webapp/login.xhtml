@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>ObraSync — Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2a3a 0%, #2d4a6a 60%, #1e3a5f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 16px;
+        }
+        .login-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            padding: 40px 36px 32px;
+        }
+        .login-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .login-logo .logo-icon {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+        }
+        .login-logo h1 {
+            margin: 0;
+            font-size: 1.7rem;
+            color: #1e3a5f;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .login-logo p {
+            margin: 4px 0 0;
+            font-size: 0.82rem;
+            color: #6b7a8d;
+        }
+        .field-group {
+            margin-bottom: 18px;
+        }
+        .field-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .field-group .ui-inputtext {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .field-group .ui-inputtext:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+        }
+        .btn-login {
+            width: 100%;
+            margin-top: 8px;
+        }
+        .btn-login .ui-button {
+            width: 100%;
+            background: #1e3a5f;
+            border: none;
+            border-radius: 7px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-login .ui-button:hover {
+            background: #2563eb;
+        }
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .ui-messages {
+            margin-bottom: 16px;
+        }
+    </style>
+</h:head>
+
+<h:body>
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <!-- Logo e titulo -->
+            <div class="login-logo">
+                <div class="logo-icon">🏗️</div>
+                <h1>ObraSync</h1>
+                <p>Plataforma de Gestao de Obras</p>
+            </div>
+
+            <h:form id="formLogin">
+                <!-- Mensagens de erro/aviso -->
+                <p:messages id="msgs" showDetail="true" closable="true"/>
+
+                <!-- Campo E-mail -->
+                <div class="field-group">
+                    <label for="email">E-mail</label>
+                    <p:inputText id="email"
+                                 value="#{authBean.email}"
+                                 placeholder="seu@email.com"
+                                 autocomplete="email"
+                                 required="true"
+                                 requiredMessage="Informe seu e-mail."/>
+                </div>
+
+                <!-- Campo Senha -->
+                <div class="field-group">
+                    <label for="senha">Senha</label>
+                    <p:password id="senha"
+                                value="#{authBean.senha}"
+                                placeholder="••••••••"
+                                feedback="false"
+                                autocomplete="current-password"
+                                required="true"
+                                requiredMessage="Informe sua senha."/>
+                </div>
+
+                <!-- Botao de Login (sem AJAX para garantir redirect) -->
+                <div class="btn-login">
+                    <p:commandButton value="Entrar"
+                                     icon="pi pi-sign-in"
+                                     ajax="false"
+                                     action="#{authBean.login}"
+                                     update="msgs"/>
+                </div>
+
+            </h:form>
+
+            <div class="login-footer">
+                ObraSync &copy; 2024 — Gestao Inteligente de Obras
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>
