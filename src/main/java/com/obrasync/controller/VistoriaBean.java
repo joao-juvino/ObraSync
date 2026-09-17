@@ -83,7 +83,7 @@ public class VistoriaBean implements Serializable {
 
             String resumo = isNovo ? "Vistoria Cadastrada" : "Vistoria Atualizada";
             String detalhe = String.format("Vistoria da obra '%s' registrada com status '%s'.",
-                    this.vistoria.getObra(), this.vistoria.getStatus().getDescricao());
+                    this.vistoria.getNomeObra(), this.vistoria.getStatus().getDescricao());
 
             adicionarMensagem(FacesMessage.SEVERITY_INFO, resumo, detalhe);
 
@@ -105,7 +105,7 @@ public class VistoriaBean implements Serializable {
             carregarVistorias();
 
             adicionarMensagem(FacesMessage.SEVERITY_WARN, "Vistoria Excluída",
-                    "Vistoria #" + vistoriaParaExcluir.getId() + " da obra '" + vistoriaParaExcluir.getObra() + "' foi removida com sucesso.");
+                    "Vistoria #" + vistoriaParaExcluir.getId() + " da obra '" + vistoriaParaExcluir.getNomeObra() + "' foi removida com sucesso.");
         }
     }
 

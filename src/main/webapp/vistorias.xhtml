@@ -309,10 +309,10 @@
 
                     <!-- Coluna Obra com Filtro -->
                     <p:column headerText="Obra / Empreendimento"
-                              sortBy="#{item.obra}"
-                              filterBy="#{item.obra}"
+                              sortBy="#{item.obra.nome}"
+                              filterBy="#{item.obra.nome}"
                               filterMatchMode="contains">
-                        <h:outputText value="#{item.obra}" style="font-weight: 600;"/>
+                        <h:outputText value="#{item.obra.nome}" style="font-weight: 600;"/>
                     </p:column>
 
                     <!-- Coluna Tipo com Filtro por Seleção -->
@@ -331,11 +331,11 @@
 
                     <!-- Coluna Responsável com Filtro -->
                     <p:column headerText="Engenheiro / Responsável"
-                              sortBy="#{item.responsavel}"
-                              filterBy="#{item.responsavel}"
+                              sortBy="#{item.responsavel.nome}"
+                              filterBy="#{item.responsavel.nome}"
                               filterMatchMode="contains">
                         <i class="pi pi-user" style="margin-right: 0.35rem; color: var(--text-secondary); font-size: 0.85rem;"></i>
-                        <h:outputText value="#{item.responsavel}"/>
+                        <h:outputText value="#{item.responsavel.nome}"/>
                     </p:column>
 
                     <!-- Coluna Localização -->
@@ -389,7 +389,7 @@
                                          actionListener="#{vistoriaBean.excluir(item)}"
                                          update="@form">
                             <p:confirm header="Confirmar Exclusão"
-                                       message="Deseja realmente excluir a vistoria da obra '#{item.obra}'?"
+                                       message="Deseja realmente excluir a vistoria da obra '#{item.obra.nome}'?"
                                        icon="pi pi-exclamation-triangle"/>
                         </p:commandButton>
                     </p:column>
@@ -416,7 +416,7 @@
                 <div class="field-group">
                     <p:outputLabel for="obra" value="Obra / Empreendimento *"/>
                     <p:inputText id="obra"
-                                 value="#{vistoriaBean.vistoria.obra}"
+                                 value="#{vistoriaBean.vistoria.obra.nome}"
                                  required="true"
                                  requiredMessage="O campo Obra é obrigatório."
                                  placeholder="Ex: Residencial Jardins das Oliveiras"/>
@@ -426,7 +426,7 @@
                     <div class="field-group" style="flex: 1; min-width: 250px;">
                         <p:outputLabel for="responsavel" value="Engenheiro / Responsável Técnico *"/>
                         <p:inputText id="responsavel"
-                                     value="#{vistoriaBean.vistoria.responsavel}"
+                                     value="#{vistoriaBean.vistoria.responsavel.nome}"
                                      required="true"
                                      requiredMessage="O Responsável Técnico é obrigatório."
                                      placeholder="Ex: Eng. Carlos Ramos"/>

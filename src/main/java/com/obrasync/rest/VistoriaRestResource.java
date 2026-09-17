@@ -82,13 +82,13 @@ public class VistoriaRestResource {
         }
 
         // Validação de campos obrigatórios
-        if (vistoria.getObra() == null || vistoria.getObra().trim().isEmpty()) {
+        if (vistoria.getObra() == null || vistoria.getNomeObra().trim().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MensagemErroDTO(Response.Status.BAD_REQUEST.getStatusCode(), "O campo 'obra' é obrigatório."))
                     .build();
         }
 
-        if (vistoria.getResponsavel() == null || vistoria.getResponsavel().trim().isEmpty()) {
+        if (vistoria.getResponsavel() == null || vistoria.getNomeResponsavel().trim().isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new MensagemErroDTO(Response.Status.BAD_REQUEST.getStatusCode(), "O campo 'responsavel' é obrigatório."))
                     .build();

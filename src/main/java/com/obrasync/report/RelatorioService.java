@@ -48,8 +48,8 @@ public class RelatorioService implements Serializable {
         // Mapeamento dos campos para JRMapCollectionDataSource
         Map<String, Object> registro = new HashMap<>();
         registro.put("id", vistoria.getId() != null ? vistoria.getId() : 0L);
-        registro.put("obra", vistoria.getObra() != null ? vistoria.getObra() : "Não informada");
-        registro.put("responsavel", vistoria.getResponsavel() != null ? vistoria.getResponsavel() : "Não informado");
+        registro.put("obra", vistoria.getObra() != null ? vistoria.getObra().getNome() : "Não informada");
+        registro.put("responsavel", vistoria.getResponsavel() != null ? vistoria.getResponsavel().getNome() : "Não informado");
         registro.put("localizacao", vistoria.getLocalizacao() != null ? vistoria.getLocalizacao() : "Não especificada");
         registro.put("observacoes", vistoria.getObservacoes() != null ? vistoria.getObservacoes() : "");
 

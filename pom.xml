@@ -65,6 +65,29 @@
             <version>2.39.1</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Mockito para simulação de EntityManager nos testes de EJB -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+            Flyway Core – migração versionada do banco de dados.
+            Versão 9.22.3: última da série 9.x, compatível com:
+              • Java 11 (Java 17+ é exigido apenas a partir da série 10)
+              • PostgreSQL 12+
+              • WildFly 26 (sem conflitos com o class-loader do container)
+            Escopo 'compile' (runtime) para que o Flyway seja empacotado no WAR
+            e executado automaticamente na inicialização do contexto JEE.
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>9.22.3</version>
+        </dependency>
     </dependencies>
 
     <build>
