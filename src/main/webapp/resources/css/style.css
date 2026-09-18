@@ -188,6 +188,8 @@ body {
     .os-user-info .user-role {
         display: none;
     }
+    .os-card { overflow-x: auto; }
+    .ui-datatable { min-width: 680px; }
 }
 
 @media (max-width: 480px) {
@@ -428,6 +430,7 @@ body {
 
 /* ── Responsividade da tabela em mobile ──────────────────── */
 @media (max-width: 640px) {
+    .ui-datatable { min-width: 0; }
     .ui-datatable-reflow thead { display: none; }
     .ui-datatable-reflow tbody td {
         display: block !important;

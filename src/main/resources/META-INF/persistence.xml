@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.2"
              xmlns="http://xmlns.jcp.org/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -16,8 +16,9 @@
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
 
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL10Dialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <!-- O schema é versionado e aplicado pelo serviço Flyway do Compose antes do WildFly. -->
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.default_schema" value="public"/>

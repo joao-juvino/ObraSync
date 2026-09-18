@@ -20,8 +20,6 @@ import java.util.logging.Logger;
  * (src/main/resources/db/migration) e aplica apenas os ainda nao executados,
  * registrando cada execucao na tabela de controle "flyway_schema_history".
  */
-@Singleton
-@Startup
 public class FlywayConfig {
 
     private static final Logger LOG = Logger.getLogger(FlywayConfig.class.getName());
@@ -30,7 +28,6 @@ public class FlywayConfig {
     @Resource(lookup = "java:jboss/datasources/PostgresDS")
     private DataSource dataSource;
 
-    @PostConstruct
     public void migrar() {
         LOG.info("[ObraSync] Iniciando migracoes Flyway...");
         try {

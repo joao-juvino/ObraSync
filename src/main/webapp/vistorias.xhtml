@@ -26,9 +26,11 @@
     <!-- ================================================================
          GROWL – notificacoes toast globais (posicionado abaixo da navbar)
          ================================================================ -->
-    <p:growl id="growl" showDetail="true" life="4500" sticky="false">
-        <p:autoUpdate/>
-    </p:growl>
+    <h:form id="formMensagens">
+        <p:growl id="growl" showDetail="true" life="4500" sticky="false">
+            <p:autoUpdate/>
+        </p:growl>
+    </h:form>
 
     <!-- ================================================================
          TOPBAR – cabecalho fixo com marca, usuario logado e logout
@@ -412,18 +414,20 @@
     <!-- ================================================================
          CONFIRM DIALOG – confirmacao global de exclusao
          ================================================================ -->
-    <p:confirmDialog global="true"
-                     showEffect="fade"
-                     hideEffect="fade"
-                     responsive="true"
-                     width="380">
-        <p:commandButton value="Nao"
-                         type="button"
-                         styleClass="ui-confirmdialog-no ui-button-secondary ui-button-flat"/>
-        <p:commandButton value="Sim, Excluir"
-                         type="button"
-                         styleClass="ui-confirmdialog-yes ui-button-danger"/>
-    </p:confirmDialog>
+    <h:form id="formConfirmacao">
+        <p:confirmDialog global="true"
+                         showEffect="fade"
+                         hideEffect="fade"
+                         responsive="true"
+                         width="380">
+            <p:commandButton value="Nao"
+                             type="button"
+                             styleClass="ui-confirmdialog-no ui-button-secondary ui-button-flat"/>
+            <p:commandButton value="Sim, Excluir"
+                             type="button"
+                             styleClass="ui-confirmdialog-yes ui-button-danger"/>
+        </p:confirmDialog>
+    </h:form>
 
 </h:body>
 </html>

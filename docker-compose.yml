@@ -10,11 +10,29 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d obrasync_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - obrasync-network
+
+  flyway_obrasync:
+    image: flyway/flyway:9.22.3
+    command: -connectRetries=60 -url=jdbc:postgresql://postgres_obrasync:5432/obrasync_db -user=postgres -password=postgrespassword migrate
+    volumes:
+      - ./src/main/resources/db/migration:/flyway/sql:ro
+    depends_on:
+      postgres_obrasync:
+        condition: service_healthy
     networks:
       - obrasync-network
 
   wildfly_obrasync:
-    image: jboss/wildfly:24.0.0.Final
+    build:
+      context: .
+      dockerfile: docker/wildfly/Dockerfile
     container_name: wildfly_obrasync
     ports:
       - "8080:8080"
@@ -22,7 +40,8 @@ services:
     volumes:
       - ./target/obrasync.war:/opt/jboss/wildfly/standalone/deployments/obrasync.war
     depends_on:
-      - postgres_obrasync
+      flyway_obrasync:
+        condition: service_completed_successfully
     networks:
       - obrasync-network
 
