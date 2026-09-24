@@ -103,17 +103,36 @@
             margin-bottom: 16px;
         }
     </style>
+    <h:outputStylesheet library="css" name="login.css"/>
 </h:head>
 
 <h:body>
-    <div class="login-wrapper">
+    <main class="login-shell">
+        <aside class="login-showcase">
+            <div class="showcase-brand"><i class="pi pi-building"/> ObraSync</div>
+            <div class="showcase-copy">
+                <span class="showcase-eyebrow">Operação de campo conectada</span>
+                <h1>Vistorias organizadas.<br/>Decisões mais seguras.</h1>
+                <p>Centralize inspeções, evidências fotográficas e laudos técnicos em uma experiência simples e rastreável.</p>
+                <div class="showcase-features">
+                    <span><i class="pi pi-check-circle"/> Acompanhamento por status</span>
+                    <span><i class="pi pi-images"/> Evidências protegidas</span>
+                    <span><i class="pi pi-file-pdf"/> Laudos em PDF</span>
+                </div>
+            </div>
+            <small>Projeto demonstrativo em Java 11 + Jakarta EE</small>
+        </aside>
+
+        <section class="login-panel">
+        <div class="login-wrapper">
         <div class="login-card">
 
             <!-- Logo e titulo -->
             <div class="login-logo">
-                <div class="logo-icon">🏗️</div>
-                <h1>ObraSync</h1>
-                <p>Plataforma de Gestao de Obras</p>
+                <div class="logo-icon"><i class="pi pi-shield"/></div>
+                <span class="login-eyebrow">Bem-vindo de volta</span>
+                <h1>Acesse sua operação</h1>
+                <p>Entre com suas credenciais para continuar.</p>
             </div>
 
             <h:form id="formLogin">
@@ -122,7 +141,7 @@
 
                 <!-- Campo E-mail -->
                 <div class="field-group">
-                    <label for="email">E-mail</label>
+                    <p:outputLabel for="email" value="E-mail"/>
                     <p:inputText id="email"
                                  value="#{authBean.email}"
                                  placeholder="seu@email.com"
@@ -133,7 +152,7 @@
 
                 <!-- Campo Senha -->
                 <div class="field-group">
-                    <label for="senha">Senha</label>
+                    <p:outputLabel for="senha" value="Senha"/>
                     <p:password id="senha"
                                 value="#{authBean.senha}"
                                 placeholder="••••••••"
@@ -148,16 +167,24 @@
                     <p:commandButton value="Entrar"
                                      icon="pi pi-sign-in"
                                      ajax="false"
-                                     action="#{authBean.login}"
-                                     update="msgs"/>
+                                     action="#{authBean.login}"/>
                 </div>
 
             </h:form>
 
-            <div class="login-footer">
-                ObraSync &copy; 2024 — Gestao Inteligente de Obras
+            <div class="demo-access">
+                <span>Acessos de demonstração • senha <strong>admin123</strong></span>
+                <div class="demo-roles">
+                    <span><b>ADMIN</b> admin@obrasync.com</span>
+                    <span><b>ENGENHEIRO</b> joao.silva@obrasync.com</span>
+                    <span><b>FISCAL</b> fiscal@obrasync.com</span>
+                </div>
             </div>
+
+            <div class="login-footer">Ambiente demonstrativo • dados locais</div>
         </div>
-    </div>
+        </div>
+        </section>
+    </main>
 </h:body>
 </html>

@@ -10,7 +10,7 @@
     <f:facet name="first">
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </f:facet>
     <title>ObraSync — Gerenciamento de Vistorias</title>
 
@@ -27,7 +27,7 @@
          GROWL – notificacoes toast globais (posicionado abaixo da navbar)
          ================================================================ -->
     <h:form id="formMensagens">
-        <p:growl id="growl" showDetail="true" life="4500" sticky="false">
+        <p:growl id="growl" showDetail="true" life="4500" sticky="false" globalOnly="true">
             <p:autoUpdate/>
         </p:growl>
     </h:form>
@@ -75,6 +75,31 @@
     <main class="os-main">
         <h:form id="formPrincipal">
 
+            <section class="os-page-heading">
+                <div>
+                    <span class="os-eyebrow">Painel operacional</span>
+                    <h1>#{vistoriaBean.tituloPainel}</h1>
+                    <p>#{vistoriaBean.subtituloPainel}</p>
+                </div>
+                <div class="os-page-heading__meta">
+                    <i class="pi pi-verified"/>
+                    <span>Sessão protegida</span>
+                </div>
+            </section>
+
+            <section class="os-access-banner os-access-banner--#{authBean.usuarioLogado.perfil.name().toLowerCase()}">
+                <i class="pi pi-shield"/>
+                <div>
+                    <strong>Visão #{authBean.usuarioLogado.perfil.descricao}</strong>
+                    <h:outputText rendered="#{accessPolicy.admin}"
+                                  value="Acesso completo: crie, edite e exclua vistorias e gerencie suas evidências."/>
+                    <h:outputText rendered="#{accessPolicy.engenheiro}"
+                                  value="Crie vistorias em seu nome e edite somente as vistorias sob sua responsabilidade."/>
+                    <h:outputText rendered="#{accessPolicy.fiscal}"
+                                  value="Consulte registros, evidências e laudos e altere o status das vistorias."/>
+                </div>
+            </section>
+
             <!-- ── KPI Dashboard – grid 4 colunas → 2 em tablet → 1 em mobile ── -->
             <h:panelGroup id="painelKpis" layout="block" styleClass="os-kpi-grid">
 
@@ -114,6 +139,14 @@
                     <div class="kpi-badge"><i class="pi pi-times-circle"/></div>
                 </div>
 
+                <div class="os-kpi-card os-kpi-card--progress">
+                    <div class="kpi-body">
+                        <p class="kpi-label">Em andamento</p>
+                        <p class="kpi-value">#{vistoriaBean.emAndamentoCount}</p>
+                    </div>
+                    <div class="kpi-badge"><i class="pi pi-spinner"/></div>
+                </div>
+
             </h:panelGroup>
             <!-- /KPI Dashboard -->
 
@@ -122,12 +155,16 @@
 
                 <!-- Cabecalho do card -->
                 <div class="os-card__header">
-                    <h2 class="os-card__title">
-                        <i class="pi pi-list"/>
-                        Quadro Geral de Vistorias
-                    </h2>
+                    <div>
+                        <h2 class="os-card__title">
+                            <i class="pi pi-list"/>
+                            #{vistoriaBean.tituloPainel}
+                        </h2>
+                        <p class="os-card__subtitle">Use os filtros para localizar rapidamente um registro.</p>
+                    </div>
                     <div class="os-card__actions">
                         <p:commandButton value="Nova Vistoria"
+                                         rendered="#{accessPolicy.podeCriar}"
                                          icon="pi pi-plus"
                                          styleClass="ui-button-success"
                                          actionListener="#{vistoriaBean.prepararNovo}"
@@ -139,6 +176,11 @@
                                          styleClass="ui-button-secondary ui-button-outlined"
                                          actionListener="#{vistoriaBean.carregarVistorias}"
                                          update="@form"/>
+                        <p:commandButton value="Limpar filtros"
+                                         icon="pi pi-filter-slash"
+                                         type="button"
+                                         styleClass="ui-button-secondary ui-button-flat"
+                                         onclick="PF('dtVistorias').clearFilters()"/>
                     </div>
                 </div>
 
@@ -181,7 +223,7 @@
                     <!-- Tipo -->
                     <p:column headerText="Tipo"
                               sortBy="#{item.tipo.descricao}"
-                              filterBy="#{item.tipo}"
+                              filterBy="#{item.tipo.name()}"
                               filterMatchMode="exact"
                               responsivePriority="3">
                         <f:facet name="filter">
@@ -189,7 +231,7 @@
                                             styleClass="ui-column-filter">
                                 <f:selectItem itemLabel="Todos" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{vistoriaBean.tiposList}"
-                                               var="t" itemLabel="#{t.descricao}" itemValue="#{t}"/>
+                                               var="t" itemLabel="#{t.descricao}" itemValue="#{t.name()}"/>
                             </p:selectOneMenu>
                         </f:facet>
                         <h:outputText value="#{item.tipo.descricao}"/>
@@ -225,7 +267,7 @@
                     <!-- Status com badge colorido -->
                     <p:column headerText="Status"
                               sortBy="#{item.status.descricao}"
-                              filterBy="#{item.status}"
+                              filterBy="#{item.status.name()}"
                               filterMatchMode="exact"
                               style="width:130px; text-align:center;"
                               responsivePriority="1">
@@ -234,7 +276,7 @@
                                             styleClass="ui-column-filter">
                                 <f:selectItem itemLabel="Todos" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{vistoriaBean.statusList}"
-                                               var="s" itemLabel="#{s.descricao}" itemValue="#{s}"/>
+                                               var="s" itemLabel="#{s.descricao}" itemValue="#{s.name()}"/>
                             </p:selectOneMenu>
                         </f:facet>
                         <p:tag value="#{item.status.descricao}"
@@ -245,15 +287,18 @@
 
                     <!-- Acoes -->
                     <p:column headerText="Acoes"
-                              style="width:150px; text-align:center;"
+                              style="width:220px; text-align:center;"
                               responsivePriority="2">
+                        <div class="os-row-actions">
                         <p:commandButton icon="pi pi-file-pdf"
+                                         rendered="#{accessPolicy.podeGerarLaudo}"
                                          title="Baixar Laudo PDF"
                                          styleClass="ui-button-rounded ui-button-help ui-button-flat"
                                          actionListener="#{vistoriaBean.baixarLaudoPdf(item)}"
                                          ajax="false"/>
 
                         <p:commandButton icon="pi pi-pencil"
+                                         rendered="#{accessPolicy.podeEditar(item)}"
                                          title="Editar"
                                          styleClass="ui-button-rounded ui-button-info ui-button-flat"
                                          actionListener="#{vistoriaBean.prepararEdicao(item)}"
@@ -261,6 +306,7 @@
                                          oncomplete="PF('dialogVistoria').show()"/>
 
                         <p:commandButton icon="pi pi-trash"
+                                         rendered="#{accessPolicy.podeExcluir}"
                                          title="Excluir"
                                          styleClass="ui-button-rounded ui-button-danger ui-button-flat"
                                          actionListener="#{vistoriaBean.excluir(item)}"
@@ -269,6 +315,17 @@
                                        message="Deseja excluir a vistoria da obra '#{item.obra.nome}'?"
                                        icon="pi pi-exclamation-triangle"/>
                         </p:commandButton>
+                        <p:commandButton icon="pi pi-images" title="Evidências"
+                                         styleClass="ui-button-rounded ui-button-secondary ui-button-flat"
+                                         actionListener="#{evidenciaBean.abrir(item)}" process="@this"
+                                         update=":formEvidencias" oncomplete="PF('dialogEvidencias').show()"/>
+                        <p:selectOneMenu value="#{item.status}" rendered="#{accessPolicy.fiscal}"
+                                         styleClass="os-status-action" title="Alterar status">
+                            <f:selectItems value="#{vistoriaBean.statusList}" var="s" itemLabel="#{s.descricao}" itemValue="#{s}"/>
+                            <p:ajax listener="#{vistoriaBean.alterarStatus(item)}" process="@this"
+                                    update=":formPrincipal :formMensagens:growl"/>
+                        </p:selectOneMenu>
+                        </div>
                     </p:column>
 
                 </p:dataTable>
@@ -297,18 +354,18 @@
 
         <h:form id="formDialog">
             <p:outputPanel id="painelDados" styleClass="ui-fluid">
+                <p:messages id="mensagensDialog" showDetail="false" closable="true"/>
 
                 <!-- Campo: Obra (linha inteira) -->
                 <div class="os-field">
                     <p:outputLabel for="obra" value="Obra / Empreendimento *"/>
                     <p:selectOneMenu id="obra"
-                                 value="#{vistoriaBean.vistoria.obra}"
-                                 converter="obraConverter"
+                                 value="#{vistoriaBean.obraId}"
                                  required="true"
                                  requiredMessage="Selecione a obra.">
                         <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
                         <f:selectItems value="#{vistoriaBean.obrasDisponiveis}" var="obra"
-                                       itemLabel="#{obra.nome}" itemValue="#{obra}"/>
+                                       itemLabel="#{obra.nome}" itemValue="#{obra.id}"/>
                     </p:selectOneMenu>
                 </div>
 
@@ -318,14 +375,17 @@
                         <div class="os-field">
                             <p:outputLabel for="responsavel" value="Engenheiro / Responsavel *"/>
                             <p:selectOneMenu id="responsavel"
-                                         value="#{vistoriaBean.vistoria.responsavel}"
-                                         converter="usuarioConverter"
+                                         value="#{vistoriaBean.responsavelId}"
+                                         disabled="#{not accessPolicy.admin}"
                                          required="true"
                                          requiredMessage="Selecione o responsavel tecnico.">
                                 <f:selectItem itemLabel="Selecione..." itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{vistoriaBean.responsaveisDisponiveis}" var="responsavel"
-                                               itemLabel="#{responsavel.nome}" itemValue="#{responsavel}"/>
+                                               itemLabel="#{responsavel.nome}" itemValue="#{responsavel.id}"/>
                             </p:selectOneMenu>
+                            <h:panelGroup layout="block" styleClass="os-field-help" rendered="#{accessPolicy.engenheiro}">
+                                Você será registrado automaticamente como responsável.
+                            </h:panelGroup>
                         </div>
                     </div>
                     <div class="col-12 md:col-6">
@@ -362,6 +422,7 @@
                             <p:outputLabel for="status" value="Status da Vistoria *"/>
                             <p:selectOneMenu id="status"
                                              value="#{vistoriaBean.vistoria.status}"
+                                             disabled="#{not accessPolicy.admin}"
                                              required="true"
                                              requiredMessage="Selecione o status.">
                                 <f:selectItems value="#{vistoriaBean.statusList}"
@@ -392,7 +453,7 @@
             </p:outputPanel>
 
             <!-- Footer do dialog com botoes (flex, responsivo) -->
-            <f:facet name="footer">
+            <h:panelGroup layout="block">
                 <div class="flex justify-content-end flex-wrap gap-2 pt-1 os-dialog-actions">
                     <p:commandButton value="Cancelar"
                                      icon="pi pi-times"
@@ -403,11 +464,47 @@
                     <p:commandButton value="Salvar Vistoria"
                                      icon="pi pi-check"
                                      actionListener="#{vistoriaBean.salvar}"
-                                     update="@form :formPrincipal:tabelaVistorias :formPrincipal:painelKpis"
-                                     oncomplete="if (!args.validationFailed) PF('dialogVistoria').hide()"
+                                     process="@form"
+                                     update="@form :formPrincipal:tabelaVistorias :formPrincipal:painelKpis :formMensagens:growl"
+                                     oncomplete="if (args &amp;&amp; args.salvou === true) PF('dialogVistoria').hide()"
                                      styleClass="ui-button-success os-action-button"/>
                 </div>
-            </f:facet>
+            </h:panelGroup>
+        </h:form>
+    </p:dialog>
+
+    <p:dialog widgetVar="dialogEvidencias" header="Evidências fotográficas" modal="true"
+              responsive="true" width="840" styleClass="os-dialog os-evidencia-dialog" closeOnEscape="true">
+        <h:form id="formEvidencias" enctype="multipart/form-data">
+            <div class="os-dialog-intro">
+                <i class="pi pi-camera"/>
+                <span>JPEG ou PNG, até 10 MB. Clique em uma foto para visualizar no tamanho original.</span>
+            </div>
+            <p:fileUpload listener="#{evidenciaBean.upload}" mode="advanced" auto="true"
+                          label="Enviar foto" sizeLimit="10485760" fileLimit="1"
+                          allowTypes="/(\.|\/)(jpe?g|png)$/" update="@form"
+                          invalidSizeMessage="Máximo de 10 MB por imagem."
+                          invalidFileMessage="Selecione JPEG ou PNG."
+                          rendered="#{accessPolicy.podeEditar(evidenciaBean.vistoria)}"/>
+            <h:panelGroup layout="block" styleClass="os-empty-state" rendered="#{empty evidenciaBean.evidencias}">
+                <i class="pi pi-images"/>
+                <strong>Nenhuma evidência adicionada</strong>
+                <span>As fotografias desta vistoria aparecerão aqui.</span>
+            </h:panelGroup>
+            <p:dataGrid value="#{evidenciaBean.evidencias}" var="foto" columns="2" layout="grid"
+                        styleClass="os-evidencia-grid">
+                <div class="os-evidencia">
+                    <h:outputLink value="#{request.contextPath}/evidencias/imagem?vistoria=#{evidenciaBean.vistoria.id}&amp;id=#{foto.id}" target="_blank">
+                        <h:graphicImage value="/evidencias/imagem?vistoria=#{evidenciaBean.vistoria.id}&amp;id=#{foto.id}" alt="#{foto.nomeArquivo}"/>
+                    </h:outputLink>
+                    <h:outputText value="#{foto.nomeArquivo}"/>
+                    <p:commandButton value="Remover" icon="pi pi-trash" styleClass="ui-button-danger ui-button-outlined"
+                                     action="#{evidenciaBean.excluir(foto)}" update="@form" process="@this"
+                                     rendered="#{accessPolicy.podeEditar(evidenciaBean.vistoria)}">
+                        <p:confirm header="Remover evidência" message="Excluir esta imagem?" icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                </div>
+            </p:dataGrid>
         </h:form>
     </p:dialog>
 
