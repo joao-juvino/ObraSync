@@ -10,21 +10,24 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurar Java 11
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '11'
           cache: maven
 
-      - name: Executar testes unitários
-        run: mvn clean test --batch-mode
+      - name: Build, testes e cobertura mínima de 70%
+        run: mvn --batch-mode clean verify
 
-      - name: Empacotar aplicação
-        run: mvn package --batch-mode
+      - name: Verificar WAR
+        run: test -s target/obrasync.war
+
+      - name: Validar build Docker
+        run: docker build -f docker/wildfly/Dockerfile -t obrasync:ci .

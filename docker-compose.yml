@@ -1,53 +1,51 @@
 services:
   postgres_obrasync:
     image: postgres:15-alpine
-    container_name: postgres_obrasync
     environment:
-      POSTGRES_DB: obrasync_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB:?Copie .env.example para .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Defina POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d obrasync_db"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
-      retries: 12
-    networks:
-      - obrasync-network
+      retries: 20
 
   flyway_obrasync:
     image: flyway/flyway:9.22.3
-    command: -connectRetries=60 -url=jdbc:postgresql://postgres_obrasync:5432/obrasync_db -user=postgres -password=postgrespassword migrate
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres_obrasync:5432/${POSTGRES_DB}
+      FLYWAY_USER: ${POSTGRES_USER}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD}
+      FLYWAY_CONNECT_RETRIES: 60
+      FLYWAY_VALIDATE_ON_MIGRATE: 'true'
     volumes:
       - ./src/main/resources/db/migration:/flyway/sql:ro
     depends_on:
       postgres_obrasync:
         condition: service_healthy
-    networks:
-      - obrasync-network
 
   wildfly_obrasync:
     build:
       context: .
       dockerfile: docker/wildfly/Dockerfile
-    container_name: wildfly_obrasync
+    environment:
+      DB_URL: jdbc:postgresql://postgres_obrasync:5432/${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      OBRASYNC_JWT_SECRET: ${OBRASYNC_JWT_SECRET:?Defina OBRASYNC_JWT_SECRET}
+      OBRASYNC_UPLOAD_DIR: /opt/jboss/uploads
     ports:
-      - "8080:8080"
-      - "9990:9990"
+      - "127.0.0.1:8080:8080"
     volumes:
-      - ./target/obrasync.war:/opt/jboss/wildfly/standalone/deployments/obrasync.war
+      - evidencias:/opt/jboss/uploads
     depends_on:
       flyway_obrasync:
         condition: service_completed_successfully
-    networks:
-      - obrasync-network
 
 volumes:
   pgdata:
-
-networks:
-  obrasync-network:
-    driver: bridge
+  evidencias:

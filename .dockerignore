@@ -1,0 +1,7 @@
+.git
+target
+.env
+.idea
+.vscode
+*.log
+docker/wildfly/postgresql.jar

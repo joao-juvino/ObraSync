@@ -1,4 +1,17 @@
 embed-server --std-out=echo --server-config=standalone.xml
+if (outcome != success) of /extension=org.wildfly.extension.microprofile.config-smallrye:read-resource
+    /extension=org.wildfly.extension.microprofile.config-smallrye:add()
+end-if
+if (outcome != success) of /subsystem=microprofile-config-smallrye:read-resource
+    /subsystem=microprofile-config-smallrye:add()
+end-if
+if (outcome != success) of /extension=org.wildfly.extension.microprofile.openapi-smallrye:read-resource
+    /extension=org.wildfly.extension.microprofile.openapi-smallrye:add()
+end-if
+if (outcome != success) of /subsystem=microprofile-openapi-smallrye:read-resource
+    /subsystem=microprofile-openapi-smallrye:add()
+end-if
 /subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-class-name=org.postgresql.Driver)
-/subsystem=datasources/data-source=PostgresDS:add(jndi-name=java:/jboss/datasources/PostgresDS,driver-name=postgresql,connection-url=jdbc:postgresql://postgres_obrasync:5432/obrasync_db,user-name=postgres,password=postgrespassword,enabled=true,use-java-context=true)
+/subsystem=datasources/data-source=PostgresDS:add(jndi-name=java:jboss/datasources/PostgresDS,driver-name=postgresql,connection-url="${env.DB_URL}",user-name="${env.DB_USER}",password="${env.DB_PASSWORD}",enabled=true,use-java-context=true,validate-on-match=true,background-validation=false,check-valid-connection-sql="SELECT 1")
+/subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size,value=11534336)
 stop-embedded-server

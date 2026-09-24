@@ -6,3 +6,7 @@ target/
 .idea/
 *.iml
 *.log
+.env
+.env.*
+!.env.example
+uploads/
