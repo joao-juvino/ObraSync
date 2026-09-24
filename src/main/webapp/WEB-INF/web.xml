@@ -8,7 +8,7 @@
 
     <context-param>
         <param-name>javax.faces.PROJECT_STAGE</param-name>
-        <param-value>Development</param-value>
+        <param-value>Production</param-value>
     </context-param>
 
     <context-param>
@@ -30,6 +30,11 @@
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <multipart-config>
+            <max-file-size>10485760</max-file-size>
+            <max-request-size>11534336</max-request-size>
+            <file-size-threshold>0</file-size-threshold>
+        </multipart-config>
     </servlet>
 
     <servlet-mapping>
@@ -39,6 +44,9 @@
 
     <welcome-file-list>
         <welcome-file>index.xhtml</welcome-file>
+        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+    <session-config><session-timeout>30</session-timeout><cookie-config><http-only>true</http-only></cookie-config><tracking-mode>COOKIE</tracking-mode></session-config>
+    <error-page><exception-type>java.lang.Throwable</exception-type><location>/erro.html</location></error-page>
 
 </web-app>

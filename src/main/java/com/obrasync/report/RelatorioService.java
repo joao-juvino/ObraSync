@@ -25,6 +25,8 @@ public class RelatorioService implements Serializable {
 
     private static final String CAMINHO_JRXML_PADRAO = "/reports/laudo_vistoria.jrxml";
     private final Map<String, JasperReport> cacheRelatoriosCompilados = new ConcurrentHashMap<>();
+    @javax.inject.Inject private com.obrasync.service.EvidenciaService evidencias;
+    @javax.inject.Inject private com.obrasync.service.EvidenciaStorageService storage;
 
     /**
      * Gera o laudo técnico da vistoria em formato binário PDF.
@@ -62,6 +64,27 @@ public class RelatorioService implements Serializable {
 
         // Preenchimento e exportação para PDF
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+        java.util.List<Map<String, ?>> imagens = new java.util.ArrayList<>();
+        if (vistoria.getId() != null) {
+            for (com.obrasync.model.EvidenciaVistoria evidencia : evidencias.listar(vistoria.getId())) {
+                Map<String, Object> linha = new HashMap<>();
+                linha.put("nome", evidencia.getNomeArquivo());
+                linha.put("descricao", evidencia.getDescricao());
+                try {
+                    byte[] bytes = storage.ler(evidencia.getCaminhoOuIdentificador());
+                    storage.validar(bytes, evidencia.getTipoMime());
+                    linha.put("imagem", javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(bytes)));
+                } catch (java.io.IOException | RuntimeException e) {
+                    linha.put("descricao", "Imagem indisponível ou inválida.");
+                }
+                imagens.add(linha);
+            }
+        }
+        if (!imagens.isEmpty()) {
+            JasperPrint anexo = JasperFillManager.fillReport(obterRelatorioCompilado("/reports/evidencias.jrxml"), parametros,
+                    new JRMapCollectionDataSource(imagens));
+            for (JRPrintPage pagina : anexo.getPages()) jasperPrint.addPage(pagina);
+        }
         return JasperExportManager.exportReportToPdf(jasperPrint);
     }
 
@@ -82,8 +105,12 @@ public class RelatorioService implements Serializable {
             throw new JRException("Template de relatório não encontrado no classpath: " + caminhoRecurso);
         }
 
-        JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlStream);
-        cacheRelatoriosCompilados.put(caminhoRecurso, jasperReport);
-        return jasperReport;
+        try (InputStream template = jrxmlStream) {
+            JasperReport jasperReport = JasperCompileManager.compileReport(template);
+            cacheRelatoriosCompilados.put(caminhoRecurso, jasperReport);
+            return jasperReport;
+        } catch (java.io.IOException e) { throw new JRException("Falha ao ler template.", e); }
     }
+    public void setEvidencias(com.obrasync.service.EvidenciaService evidencias) { this.evidencias = evidencias; }
+    public void setStorage(com.obrasync.service.EvidenciaStorageService storage) { this.storage = storage; }
 }

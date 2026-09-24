@@ -292,7 +292,7 @@
                 <textElement textAlignment="Right" verticalAlignment="Middle">
                     <font size="8"/>
                 </textElement>
-                <textFieldExpression><![CDATA["Página 1 de 1"]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
         </band>
     </pageFooter>
