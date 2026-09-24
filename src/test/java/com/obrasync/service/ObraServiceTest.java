@@ -35,6 +35,7 @@ class ObraServiceTest {
     void setUp() {
         obraService = new ObraService();
         obraService.setEntityManager(em);
+        obraService.setAcesso(mock(com.obrasync.security.AccessPolicy.class));
     }
 
     @Test
@@ -98,6 +99,9 @@ class ObraServiceTest {
     void deveExcluirObra() {
         Obra obra = new Obra(1L, "Obra Teste", null, null, null);
         when(em.find(eq(Obra.class), eq(1L))).thenReturn(obra);
+        when(em.createQuery(anyString(), eq(Obra.class))).thenReturn(query);
+        when(query.setParameter("id", 1L)).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(obra);
 
         obraService.excluir(1L);
 

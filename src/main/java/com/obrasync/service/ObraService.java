@@ -20,6 +20,7 @@ public class ObraService implements Serializable {
 
     @PersistenceContext(unitName = "obrasyncPU")
     private EntityManager em;
+    @javax.inject.Inject private com.obrasync.security.AccessPolicy acesso;
 
     /**
      * Persiste ou atualiza uma Obra no banco de dados.
@@ -28,6 +29,7 @@ public class ObraService implements Serializable {
      * @return Entidade persistida gerenciada pelo JPA
      */
     public Obra salvar(Obra obra) {
+        acesso.administrar();
         if (obra == null) {
             throw new IllegalArgumentException("A obra não pode ser nula.");
         }
@@ -77,9 +79,12 @@ public class ObraService implements Serializable {
      * Remove uma obra do banco de dados pelo seu identificador.
      */
     public void excluir(Long id) {
+        acesso.administrar();
         if (id != null) {
             Obra obra = buscarPorId(id);
             if (obra != null) {
+                if (!buscarComVistorias(id).getVistorias().isEmpty())
+                    throw new IllegalArgumentException("Remova as vistorias da obra antes de excluí-la.");
                 em.remove(obra);
             }
         }
@@ -88,4 +93,5 @@ public class ObraService implements Serializable {
     public void setEntityManager(EntityManager em) {
         this.em = em;
     }
+    public void setAcesso(com.obrasync.security.AccessPolicy acesso) { this.acesso = acesso; }
 }

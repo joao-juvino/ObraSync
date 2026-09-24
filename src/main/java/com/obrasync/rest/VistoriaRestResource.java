@@ -1,21 +1,114 @@
 package com.obrasync.rest;
 
-import com.obrasync.model.*; import com.obrasync.rest.dto.*; import com.obrasync.security.Secured; import com.obrasync.service.*;
-import javax.enterprise.context.RequestScoped; import javax.inject.Inject; import javax.ws.rs.*; import javax.ws.rs.core.*; import java.net.URI; import java.time.LocalDate; import java.util.stream.Collectors;
+import com.obrasync.model.*;
+import com.obrasync.rest.dto.*;
+import com.obrasync.security.*;
+import com.obrasync.service.*;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Secured @Path("/vistorias") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON) @RequestScoped
-@org.eclipse.microprofile.openapi.annotations.tags.Tag(name = "Vistorias", description = "CRUD, filtros e indicadores de vistorias.")
+@Secured @Path("/vistorias") @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON) @RequestScoped
+@Tag(name="Vistorias", description="CRUD, filtros e indicadores de vistorias")
 public class VistoriaRestResource {
- @Inject private VistoriaService vistoriaService; @Context private UriInfo uriInfo;
- @GET @org.eclipse.microprofile.openapi.annotations.Operation(summary="Lista vistorias",description="Filtra no PostgreSQL por status, tipo, obra, responsável e período; aceita paginação page/size.") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="200",description="Página de vistorias") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="400",description="Filtros ou paginação inválidos") public Response listar(@QueryParam("status") String status,@QueryParam("tipo") String tipo,@QueryParam("obra") String obra,@QueryParam("responsavel") String responsavel,@QueryParam("dataInicial") String inicialTexto,@QueryParam("dataFinal") String finalTexto,@DefaultValue("0") @QueryParam("page") int page,@DefaultValue("20") @QueryParam("size") int size){
-  try { LocalDate inicial=data(inicialTexto), dataFinal=data(finalTexto); if(page<0||size<1||size>100||(inicial!=null&&dataFinal!=null&&inicial.isAfter(dataFinal))) return erro(400,"Parâmetros de paginação ou período inválidos."); PaginaResultado<Vistoria> p=vistoriaService.pesquisar(en(status,StatusVistoria.class),en(tipo,TipoVistoria.class),obra,responsavel,inicial,dataFinal,page,size); return Response.ok(new PaginaResponseDTO<>(p.getItens().stream().map(VistoriaResponseDTO::de).collect(Collectors.toList()),page,size,p.getTotal())).build(); } catch(IllegalArgumentException e){return erro(400,"Filtros ou datas inválidos.");}
- }
- @GET @Path("/resumo") @org.eclipse.microprofile.openapi.annotations.Operation(summary="Obtém métricas das vistorias") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="200",description="Total, status e taxa de aprovação") public Response resumo(){ long total=vistoriaService.contarTotal(),ap=vistoriaService.contarAprovadas(),pe=vistoriaService.contarPendentes(),re=vistoriaService.contarReprovadas(); java.util.Map<String,Object> r=new java.util.LinkedHashMap<>();r.put("total",total);r.put("aprovadas",ap);r.put("pendentes",pe);r.put("reprovadas",re);r.put("emAndamento",total-ap-pe-re);r.put("taxaAprovacao",vistoriaService.calcularTaxaAprovacao());return Response.ok(r).build(); }
- @GET @Path("/{id}") @org.eclipse.microprofile.openapi.annotations.Operation(summary="Busca uma vistoria") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="200",description="Vistoria encontrada") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="404",description="Vistoria não encontrada") public Response buscar(@PathParam("id") Long id){Vistoria v=vistoriaService.buscarPorId(id);return v==null?erro(404,"Vistoria não encontrada."):Response.ok(VistoriaResponseDTO.de(v)).build();}
- @POST @org.eclipse.microprofile.openapi.annotations.Operation(summary="Cria uma vistoria") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="201",description="Vistoria criada") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="400",description="Payload inválido") public Response criar(VistoriaRequestDTO d){ if(d==null)return erro(400,"Payload obrigatório."); try{Vistoria v=salvar(null,d);URI u=uriInfo==null?URI.create("/api/vistorias/"+v.getId()):uriInfo.getAbsolutePathBuilder().path(v.getId().toString()).build();return Response.created(u).entity(VistoriaResponseDTO.de(v)).build();}catch(IllegalArgumentException e){return erro(400,e.getMessage());}}
- @PUT @Path("/{id}") @org.eclipse.microprofile.openapi.annotations.Operation(summary="Substitui uma vistoria") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="200",description="Vistoria atualizada") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="404",description="Vistoria não encontrada") public Response atualizar(@PathParam("id") Long id,VistoriaRequestDTO d){if(d==null)return erro(400,"Payload obrigatório.");if(vistoriaService.buscarPorId(id)==null)return erro(404,"Vistoria não encontrada.");try{return Response.ok(VistoriaResponseDTO.de(salvar(id,d))).build();}catch(IllegalArgumentException e){return erro(400,e.getMessage());}}
- @DELETE @Path("/{id}") @org.eclipse.microprofile.openapi.annotations.Operation(summary="Exclui uma vistoria") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="204",description="Vistoria removida") @org.eclipse.microprofile.openapi.annotations.responses.APIResponse(responseCode="404",description="Vistoria não encontrada") public Response excluir(@PathParam("id") Long id){return vistoriaService.excluir(id)?Response.noContent().build():erro(404,"Vistoria não encontrada.");}
- private Vistoria salvar(Long id,VistoriaRequestDTO d){if(d.getObraId()==null||d.getResponsavelId()==null||d.getTipo()==null)throw new IllegalArgumentException("obraId, responsavelId e tipo são obrigatórios.");Vistoria v=new Vistoria();v.setId(id);Obra o=new Obra();o.setId(d.getObraId());Usuario u=new Usuario();u.setId(d.getResponsavelId());v.setObra(o);v.setResponsavel(u);v.setTipo(d.getTipo());v.setDataVistoria(d.getDataVistoria()==null?LocalDate.now():d.getDataVistoria());v.setStatus(d.getStatus()==null?StatusVistoria.PENDENTE:d.getStatus());v.setLocalizacao(d.getLocalizacao());v.setObservacoes(d.getObservacoes());return vistoriaService.salvar(v);}
- private LocalDate data(String v){return v==null||v.isBlank()?null:LocalDate.parse(v);} private <E extends Enum<E>> E en(String v,Class<E> c){return v==null||v.isBlank()?null:Enum.valueOf(c,v.toUpperCase());} private Response erro(int s,String m){return Response.status(s).entity(new MensagemErroDTO(s,m)).build();}
- public void setVistoriaService(VistoriaService s){vistoriaService=s;} public void setUriInfo(UriInfo u){uriInfo=u;}
+    @Inject private VistoriaService vistoriaService;
+    @Context private UriInfo uriInfo;
+
+    @GET @Operation(summary="Lista vistorias com filtros e paginação no banco")
+    public Response listar(@QueryParam("status") String status, @QueryParam("tipo") String tipo,
+            @QueryParam("obra") String obra, @QueryParam("responsavel") String responsavel,
+            @QueryParam("dataInicial") String inicialTexto, @QueryParam("dataFinal") String finalTexto,
+            @DefaultValue("0") @QueryParam("page") int page, @DefaultValue("20") @QueryParam("size") int size) {
+        try {
+            LocalDate inicial = data(inicialTexto), fim = data(finalTexto);
+            if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE
+                    || (inicial != null && fim != null && inicial.isAfter(fim)))
+                return erro(400,"Paginação ou período inválidos.");
+            PaginaResultado<Vistoria> pagina = vistoriaService.pesquisar(en(status,StatusVistoria.class),
+                    en(tipo,TipoVistoria.class),obra,responsavel,inicial,fim,page,size);
+            return Response.ok(new PaginaResponseDTO<>(pagina.getItens().stream().map(VistoriaResponseDTO::de)
+                    .collect(Collectors.toList()),page,size,pagina.getTotal())).build();
+        } catch (IllegalArgumentException | DateTimeParseException e) {
+            return erro(400,"Filtros ou datas inválidos.");
+        }
+    }
+
+    @GET @Path("/resumo") @Operation(summary="Obtém totalizadores e taxa de aprovação")
+    public Response resumo() {
+        long total = vistoriaService.contarTotal(), aprovadas = vistoriaService.contarAprovadas();
+        long pendentes = vistoriaService.contarPendentes(), reprovadas = vistoriaService.contarReprovadas();
+        Map<String,Object> resumo = new LinkedHashMap<>();
+        resumo.put("total",total); resumo.put("aprovadas",aprovadas); resumo.put("pendentes",pendentes);
+        resumo.put("reprovadas",reprovadas); resumo.put("emAndamento",total-aprovadas-pendentes-reprovadas);
+        resumo.put("taxaAprovacao",vistoriaService.calcularTaxaAprovacao());
+        return Response.ok(resumo).build();
+    }
+
+    @GET @Path("/{id}") @Operation(summary="Busca uma vistoria por ID")
+    public Response buscar(@PathParam("id") Long id) {
+        Vistoria vistoria = vistoriaService.buscarPorId(id);
+        return vistoria == null ? erro(404,"Vistoria não encontrada.") : Response.ok(VistoriaResponseDTO.de(vistoria)).build();
+    }
+
+    @POST @Operation(summary="Cria uma vistoria")
+    public Response criar(VistoriaRequestDTO dto) {
+        if (dto == null) return erro(400,"Payload obrigatório.");
+        try {
+            Vistoria vistoria = salvar(null,dto);
+            URI location = uriInfo == null ? URI.create("/api/vistorias/" + vistoria.getId())
+                    : uriInfo.getAbsolutePathBuilder().path(vistoria.getId().toString()).build();
+            return Response.created(location).entity(VistoriaResponseDTO.de(vistoria)).build();
+        } catch (IllegalArgumentException e) { return erro(400,e.getMessage()); }
+    }
+
+    @PUT @Path("/{id}") @Operation(summary="Substitui os campos editáveis de uma vistoria")
+    public Response atualizar(@PathParam("id") Long id, VistoriaRequestDTO dto) {
+        if (dto == null) return erro(400,"Payload obrigatório.");
+        if (vistoriaService.buscarPorId(id) == null) return erro(404,"Vistoria não encontrada.");
+        try { return Response.ok(VistoriaResponseDTO.de(salvar(id,dto))).build(); }
+        catch (IllegalArgumentException e) { return erro(400,e.getMessage()); }
+    }
+
+    @PATCH @Path("/{id}/status") @RolesPermitidos({"ADMIN","FISCAL"})
+    @Operation(summary="Altera somente o status; permitido a ADMIN e FISCAL")
+    public Response status(@PathParam("id") Long id, StatusRequestDTO dto) {
+        if (dto == null || dto.getStatus() == null) return erro(400,"Status obrigatório.");
+        return Response.ok(VistoriaResponseDTO.de(vistoriaService.atualizarStatus(id,dto.getStatus()))).build();
+    }
+
+    @DELETE @Path("/{id}") @Operation(summary="Exclui uma vistoria e suas evidências; somente ADMIN")
+    public Response excluir(@PathParam("id") Long id) {
+        return vistoriaService.excluir(id) ? Response.noContent().build() : erro(404,"Vistoria não encontrada.");
+    }
+
+    private Vistoria salvar(Long id,VistoriaRequestDTO dto) {
+        if (dto.getObraId() == null || dto.getResponsavelId() == null || dto.getTipo() == null)
+            throw new IllegalArgumentException("obraId, responsavelId e tipo são obrigatórios.");
+        Vistoria vistoria = new Vistoria(); vistoria.setId(id);
+        Obra obra = new Obra(); obra.setId(dto.getObraId());
+        Usuario usuario = new Usuario(); usuario.setId(dto.getResponsavelId());
+        vistoria.setObra(obra); vistoria.setResponsavel(usuario); vistoria.setTipo(dto.getTipo());
+        vistoria.setDataVistoria(dto.getDataVistoria() == null ? LocalDate.now() : dto.getDataVistoria());
+        vistoria.setStatus(dto.getStatus() == null ? StatusVistoria.PENDENTE : dto.getStatus());
+        vistoria.setLocalizacao(dto.getLocalizacao()); vistoria.setObservacoes(dto.getObservacoes());
+        return vistoriaService.salvar(vistoria);
+    }
+    private LocalDate data(String valor) { return valor == null || valor.isBlank() ? null : LocalDate.parse(valor); }
+    private <E extends Enum<E>> E en(String valor,Class<E> tipo) {
+        return valor == null || valor.isBlank() ? null : Enum.valueOf(tipo,valor.toUpperCase(Locale.ROOT));
+    }
+    private Response erro(int status,String mensagem) {
+        return Response.status(status).entity(new MensagemErroDTO(status,mensagem)).build();
+    }
+    public void setVistoriaService(VistoriaService service) { vistoriaService = service; }
+    public void setUriInfo(UriInfo uri) { uriInfo = uri; }
 }

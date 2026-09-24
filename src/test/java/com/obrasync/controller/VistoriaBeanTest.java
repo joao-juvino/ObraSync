@@ -8,6 +8,9 @@ import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
 import com.obrasync.report.RelatorioService;
 import com.obrasync.service.VistoriaService;
+import com.obrasync.service.ObraService;
+import com.obrasync.service.UsuarioService;
+import com.obrasync.security.AccessPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,14 +30,20 @@ class VistoriaBeanTest {
     private VistoriaBean bean;
     @Mock private VistoriaService service;
     @Mock private RelatorioService relatorioService;
+    @Mock private ObraService obraService;
+    @Mock private UsuarioService usuarioService;
 
     @BeforeEach
     void setUp() {
-        when(service.listarTodas()).thenReturn(Collections.singletonList(vistoria(1L)));
+        when(service.listarVisiveis()).thenReturn(Collections.singletonList(vistoria(1L)));
+        lenient().when(obraService.buscarPorId(1L)).thenAnswer(invocation -> vistoria(1L).getObra());
+        lenient().when(usuarioService.buscarPorId(2L)).thenAnswer(invocation -> vistoria(1L).getResponsavel());
 
         bean = new VistoriaBean();
         bean.setVistoriaService(service);
         bean.setRelatorioService(relatorioService);
+        bean.setObraService(obraService);
+        bean.setUsuarioService(usuarioService);
         bean.inicializar();
     }
 
@@ -66,8 +75,24 @@ class VistoriaBeanTest {
         bean.salvar();
 
         verify(service).salvar(any(Vistoria.class));
-        verify(service, times(2)).listarTodas();
+        verify(service, times(2)).listarVisiveis();
+        verify(obraService).buscarPorId(1L);
+        verify(usuarioService).buscarPorId(2L);
         assertNull(bean.getVistoria().getId());
+    }
+
+    @Test
+    @DisplayName("Ao criar como engenheiro, define o usuário autenticado como responsável")
+    void devePrepararNovoParaEngenheiro() {
+        Usuario engenheiro = new Usuario(9L, "Eng. Logado", "eng@obrasync.com", "hash", Perfil.ENGENHEIRO);
+        AccessPolicy policy = mock(AccessPolicy.class);
+        when(policy.isEngenheiro()).thenReturn(true);
+        when(policy.usuario()).thenReturn(engenheiro);
+        bean.setAccessPolicy(policy);
+
+        bean.prepararNovo();
+
+        assertSame(engenheiro, bean.getVistoria().getResponsavel());
     }
 
     @Test
@@ -76,15 +101,12 @@ class VistoriaBeanTest {
         bean.excluir(vistoria(1L));
 
         verify(service).excluir(1L);
-        verify(service, times(2)).listarTodas();
+        verify(service, times(2)).listarVisiveis();
     }
 
     @Test
     @DisplayName("Deve expor métricas e enums do dashboard")
     void deveExporMetricasEEnums() {
-        when(service.contarTotal()).thenReturn(1L);
-        when(service.contarAprovadas()).thenReturn(1L);
-
         assertEquals(1L, bean.getTotalVistorias());
         assertEquals(1L, bean.getAprovadasCount());
         assertEquals(StatusVistoria.values().length, bean.getStatusList().length);

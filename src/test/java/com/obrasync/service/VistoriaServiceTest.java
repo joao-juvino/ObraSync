@@ -6,6 +6,7 @@ import com.obrasync.model.StatusVistoria;
 import com.obrasync.model.TipoVistoria;
 import com.obrasync.model.Usuario;
 import com.obrasync.model.Vistoria;
+import com.obrasync.security.AccessPolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,11 +33,14 @@ class VistoriaServiceTest {
     @Mock private EntityManager em;
     @Mock private TypedQuery<Vistoria> vistoriaQuery;
     @Mock private TypedQuery<Long> contagemQuery;
+    @Mock private AccessPolicy acesso;
 
     @BeforeEach
     void setUp() {
         vistoriaService = new VistoriaService();
         vistoriaService.setEntityManager(em);
+        vistoriaService.setAcesso(acesso);
+        vistoriaService.setEvidencias(mock(EvidenciaService.class));
     }
 
     @Test
@@ -50,6 +54,34 @@ class VistoriaServiceTest {
 
         assertEquals(Collections.singletonList(vistoria), resultado);
         verify(em).createQuery(contains("JOIN FETCH v.responsavel"), eq(Vistoria.class));
+    }
+
+    @Test
+    @DisplayName("Engenheiro visualiza somente vistorias sob sua responsabilidade")
+    void deveListarSomenteVistoriasDoEngenheiro() {
+        Usuario engenheiro = new Usuario(2L, "Engenheira", "eng@teste", "hash", Perfil.ENGENHEIRO);
+        when(acesso.usuario()).thenReturn(engenheiro);
+        when(em.createQuery(contains("WHERE r.id = :responsavelId"), eq(Vistoria.class))).thenReturn(vistoriaQuery);
+        when(vistoriaQuery.setParameter("responsavelId", 2L)).thenReturn(vistoriaQuery);
+        when(vistoriaQuery.getResultList()).thenReturn(Collections.singletonList(vistoriaPersistida(10L)));
+
+        assertEquals(1, vistoriaService.listarVisiveis().size());
+
+        verify(acesso).consultar();
+        verify(vistoriaQuery).setParameter("responsavelId", 2L);
+    }
+
+    @Test
+    @DisplayName("Administrador visualiza a fila completa")
+    void deveListarTudoParaAdministrador() {
+        when(acesso.usuario()).thenReturn(new Usuario(1L, "Admin", "admin@teste", "hash", Perfil.ADMIN));
+        when(em.createQuery(contains("ORDER BY v.id DESC"), eq(Vistoria.class))).thenReturn(vistoriaQuery);
+        when(vistoriaQuery.getResultList()).thenReturn(Collections.singletonList(vistoriaPersistida(10L)));
+
+        assertEquals(1, vistoriaService.listarVisiveis().size());
+
+        verify(acesso).consultar();
+        verify(vistoriaQuery, never()).setParameter(eq("responsavelId"), any());
     }
 
     @Test
@@ -80,8 +112,8 @@ class VistoriaServiceTest {
         Vistoria nova = vistoriaPersistida(null);
         Obra obraGerenciada = new Obra();
         Usuario usuarioGerenciado = new Usuario();
-        when(em.getReference(Obra.class, 1L)).thenReturn(obraGerenciada);
-        when(em.getReference(Usuario.class, 2L)).thenReturn(usuarioGerenciado);
+        when(em.find(Obra.class, 1L)).thenReturn(obraGerenciada);
+        when(em.find(Usuario.class, 2L)).thenReturn(usuarioGerenciado);
 
         Vistoria resultado = vistoriaService.salvar(nova);
 
@@ -92,16 +124,19 @@ class VistoriaServiceTest {
     }
 
     @Test
-    @DisplayName("Deve atualizar vistoria existente por merge")
+    @DisplayName("Deve atualizar campos da entidade gerenciada preservando evidências")
     void deveAtualizarVistoriaExistente() {
         Vistoria existente = vistoriaPersistida(10L);
         Vistoria gerenciada = vistoriaPersistida(10L);
-        when(em.getReference(Obra.class, 1L)).thenReturn(new Obra());
-        when(em.getReference(Usuario.class, 2L)).thenReturn(new Usuario());
-        when(em.merge(existente)).thenReturn(gerenciada);
+        when(em.find(Obra.class, 1L)).thenReturn(new Obra());
+        when(em.find(Usuario.class, 2L)).thenReturn(new Usuario());
+        when(em.find(Vistoria.class, 10L)).thenReturn(gerenciada);
+        gerenciada.getEvidencias().add(new com.obrasync.model.EvidenciaVistoria());
 
         assertSame(gerenciada, vistoriaService.salvar(existente));
-        verify(em).merge(existente);
+        assertEquals(1, gerenciada.getEvidencias().size());
+        assertEquals(existente.getStatus(), gerenciada.getStatus());
+        verify(em, never()).merge(any());
     }
 
     @Test
