@@ -12,13 +12,10 @@ import java.util.logging.Logger;
 /**
  * Servico EJB Singleton responsavel por emitir e validar tokens JWT (HMAC-SHA256).
  *
- * AVISO DE SEGURANCA:
- *   A chave secreta abaixo deve ser externalizada em producao via variavel de
- *   ambiente ou recurso JNDI no standalone.xml do WildFly:
- *     System.getenv("OBRASYNC_JWT_SECRET")
- *   Ela deve ter no minimo 32 caracteres para o algoritmo HS256.
+ * A chave vem de OBRASYNC_JWT_SECRET (mínimo 32 bytes). A ausência impede o deploy.
  */
 @Singleton
+@javax.ejb.Startup
 public class JwtService {
 
     private static final Logger LOG = Logger.getLogger(JwtService.class.getName());
@@ -26,19 +23,18 @@ public class JwtService {
     /** Duracao padrao do token: 8 horas em milissegundos */
     private static final long EXPIRACAO_MS = 8 * 60 * 60 * 1000L;
 
-    /**
-     * Chave secreta HMAC-SHA256.
-     * Em producao: substitua por System.getenv("OBRASYNC_JWT_SECRET")
-     */
-    private static final String CHAVE_SECRETA =
-            "ObraSync@2024#SecretKey!MustBe32CharsMin";
-
+    /** Chave HMAC-SHA256 configurada no ambiente. */
     private final SecretKey chave;
 
     public JwtService() {
-        this.chave = Keys.hmacShaKeyFor(
-                CHAVE_SECRETA.getBytes(StandardCharsets.UTF_8)
-        );
+        this(System.getenv("OBRASYNC_JWT_SECRET"));
+    }
+
+    public JwtService(String segredo) {
+        if (segredo == null || segredo.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("OBRASYNC_JWT_SECRET deve conter ao menos 32 bytes.");
+        }
+        this.chave = Keys.hmacShaKeyFor(segredo.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -85,7 +81,7 @@ public class JwtService {
         try {
             return validarToken(token).getSubject();
         } catch (JwtException | IllegalArgumentException e) {
-            LOG.warning("[JwtService] Token invalido: " + e.getMessage());
+            LOG.fine("Token inválido.");
             return null;
         }
     }

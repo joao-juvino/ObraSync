@@ -36,6 +36,7 @@ class UsuarioServiceTest {
     void setUp() {
         usuarioService = new UsuarioService();
         usuarioService.setEntityManager(em);
+        usuarioService.setAcesso(mock(com.obrasync.security.AccessPolicy.class));
     }
 
     @Test

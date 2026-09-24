@@ -50,6 +50,7 @@ public class AuthorizationFilter implements Filter {
     private boolean isRecursoPublico(String uri, String ctx) {
         // Tela de login
         if (uri.equals(ctx + "/login.xhtml")) return true;
+        if (uri.equals(ctx + "/api-docs") || uri.startsWith(ctx + "/api-docs/") || uri.equals(ctx + "/erro.html")) return true;
 
         // Recursos estaticos do JSF/PrimeFaces (CSS, JS, imagens)
         if (uri.contains("/javax.faces.resource/")) return true;

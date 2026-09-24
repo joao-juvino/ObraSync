@@ -58,6 +58,7 @@ public class AuthBean implements Serializable {
         // Salva o usuario na sessao para o AuthorizationFilter verificar
         usuarioLogado = autenticado;
         HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
+        ((javax.servlet.http.HttpServletRequest) ctx.getExternalContext().getRequest()).changeSessionId();
         session.setAttribute("usuarioLogado", usuarioLogado);
 
         senha = null;

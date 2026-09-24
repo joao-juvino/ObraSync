@@ -1,126 +1,67 @@
 package com.obrasync.security;
 
+import com.obrasync.model.Usuario;
+import com.obrasync.rest.dto.MensagemErroDTO;
+import com.obrasync.service.UsuarioService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-
+import javax.annotation.Priority;
 import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.container.*;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.container.ResourceInfo;
-import javax.ws.rs.core.Context;
-import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
 
-/**
- * Filtro JAX-RS que intercepta requisicoes anotadas com @Secured.
- *
- * Fluxo de validacao:
- *   1. Extrai o header "Authorization: Bearer <token>"
- *   2. Valida a assinatura e expiracao do JWT via JwtService
- *   3. Se valido: injeta o SecurityContext com as claims do usuario
- *   4. Se invalido: aborta com HTTP 401 Unauthorized
- */
-@Provider
-@Secured
+@Provider @Secured @Priority(Priorities.AUTHENTICATION)
 public class JwtAuthenticationFilter implements ContainerRequestFilter {
+    @Inject private JwtService jwtService;
+    @Inject private UsuarioService usuarios;
+    @Context private ResourceInfo resourceInfo;
+    @Context private HttpServletRequest request;
 
-    private static final String BEARER_PREFIX = "Bearer ";
-
-    @Inject
-    private JwtService jwtService;
-    @Context
-    private ResourceInfo resourceInfo;
-
-    @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
-        String authHeader = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-
-        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            abortar(requestContext, "Authorization header ausente ou formato invalido. Use: Bearer <token>");
+    @Override public void filter(ContainerRequestContext context) {
+        String header = context.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (header == null || !header.startsWith("Bearer ") || header.substring(7).isBlank()) {
+            abortar(context, 401, "Token Bearer obrigatório.");
             return;
         }
-
-        String token = authHeader.substring(BEARER_PREFIX.length()).trim();
-
-        if (token.isEmpty()) {
-            abortar(requestContext, "Token JWT nao informado.");
-            return;
-        }
-
         try {
-            Claims claims = jwtService.validarToken(token);
-            String email  = claims.getSubject();
-            String nome   = claims.get("nome",   String.class);
-            String perfil = claims.get("perfil", String.class);
-
-            if (!metodoPermitido(requestContext.getMethod(), perfil)) {
-                ctx403(requestContext, "Perfil sem permissão para este recurso.");
-                return;
+            Claims claims = jwtService.validarToken(header.substring(7).trim());
+            Usuario usuario = usuarios.buscarPorEmail(claims.getSubject());
+            if (usuario == null || usuario.getPerfil() == null) {
+                abortar(context, 401, "Usuário não disponível."); return;
             }
-
-            RolesPermitidos roles = resourceInfo != null && resourceInfo.getResourceMethod() != null
-                    ? resourceInfo.getResourceMethod().getAnnotation(RolesPermitidos.class) : null;
-            if (roles == null && resourceInfo != null && resourceInfo.getResourceClass() != null) {
-                roles = resourceInfo.getResourceClass().getAnnotation(RolesPermitidos.class);
-            }
-            if (roles != null && !java.util.Arrays.stream(roles.value()).anyMatch(r -> r.equalsIgnoreCase(perfil))) {
-                ctx403(requestContext, "Perfil sem permissão para este recurso.");
-                return;
-            }
-
-            // Injeta SecurityContext para que os recursos possam consultar o usuario autenticado
-            requestContext.setSecurityContext(new SecurityContext() {
-                @Override
-                public Principal getUserPrincipal() {
-                    return () -> email;
-                }
-
-                @Override
-                public boolean isUserInRole(String role) {
-                    return role != null && role.equalsIgnoreCase(perfil);
-                }
-
-                @Override
-                public boolean isSecure() {
-                    return requestContext.getSecurityContext().isSecure();
-                }
-
-                @Override
-                public String getAuthenticationScheme() {
-                    return "Bearer";
-                }
+            String perfil = usuario.getPerfil().name();
+            RolesPermitidos roles = resourceInfo == null || resourceInfo.getResourceMethod() == null ? null : resourceInfo.getResourceMethod().getAnnotation(RolesPermitidos.class);
+            if (roles == null && resourceInfo != null && resourceInfo.getResourceClass() != null) roles = resourceInfo.getResourceClass().getAnnotation(RolesPermitidos.class);
+            boolean permitido = roles != null ? Arrays.asList(roles.value()).contains(perfil)
+                    : "GET".equals(context.getMethod()) || "HEAD".equals(context.getMethod())
+                    || ("DELETE".equals(context.getMethod()) ? "ADMIN".equals(perfil)
+                    : "ADMIN".equals(perfil) || "ENGENHEIRO".equals(perfil));
+            if (!permitido) { abortar(context, 403, "Perfil sem permissão para este recurso."); return; }
+            final boolean secure = context.getSecurityContext() != null && context.getSecurityContext().isSecure();
+            request.setAttribute(AccessPolicy.JWT_USER, usuario);
+            context.setSecurityContext(new SecurityContext() {
+                public Principal getUserPrincipal() { return usuario::getEmail; }
+                public boolean isUserInRole(String role) { return perfil.equals(role); }
+                public boolean isSecure() { return secure; }
+                public String getAuthenticationScheme() { return "Bearer"; }
             });
-
-        } catch (JwtException e) {
-            abortar(requestContext, "Token JWT invalido ou expirado: " + e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            abortar(context, 401, "Token inválido ou expirado.");
         }
     }
-
-    private void abortar(ContainerRequestContext ctx, String mensagem) {
-        ctx.abortWith(Response
-                .status(Response.Status.UNAUTHORIZED)
-                .entity("{\"erro\":\"" + mensagem + "\"}")
-                .header("WWW-Authenticate", "Bearer realm=\"ObraSync\"")
-                .header("Content-Type", "application/json")
-                .build());
+    private void abortar(ContainerRequestContext context, int status, String mensagem) {
+        Response.ResponseBuilder response = Response.status(status).type(MediaType.APPLICATION_JSON)
+                .entity(new MensagemErroDTO(status, mensagem));
+        if (status == 401) response.header("WWW-Authenticate", "Bearer realm=\"ObraSync\"");
+        context.abortWith(response.build());
     }
-
-    private void ctx403(ContainerRequestContext ctx, String mensagem) {
-        ctx.abortWith(Response.status(Response.Status.FORBIDDEN)
-                .entity("{\"status\":403,\"mensagem\":\"" + mensagem + "\"}")
-                .header("Content-Type", "application/json").build());
-    }
-
-    private boolean metodoPermitido(String metodo, String perfil) {
-        if ("GET".equals(metodo)) return "ADMIN".equals(perfil) || "ENGENHEIRO".equals(perfil) || "FISCAL".equals(perfil);
-        if ("DELETE".equals(metodo)) return "ADMIN".equals(perfil);
-        return "ADMIN".equals(perfil) || "ENGENHEIRO".equals(perfil);
-    }
-
-    public void setJwtService(JwtService service) { this.jwtService = service; }
-    public void setResourceInfo(ResourceInfo info) { this.resourceInfo = info; }
+    public void setJwtService(JwtService service) { jwtService = service; }
+    public void setUsuarioService(UsuarioService service) { usuarios = service; }
+    public void setResourceInfo(ResourceInfo info) { resourceInfo = info; }
+    public void setRequest(HttpServletRequest request) { this.request = request; }
 }

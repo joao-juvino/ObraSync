@@ -22,6 +22,7 @@ public class UsuarioService implements Serializable {
 
     @PersistenceContext(unitName = "obrasyncPU")
     private EntityManager em;
+    @javax.inject.Inject private com.obrasync.security.AccessPolicy acesso;
 
     /**
      * Persiste ou atualiza um Usuário no banco de dados.
@@ -30,6 +31,7 @@ public class UsuarioService implements Serializable {
      * @return Entidade persistida gerenciada pelo JPA
      */
     public Usuario salvar(Usuario usuario) {
+        acesso.administrar();
         if (usuario == null) {
             throw new IllegalArgumentException("O usuário não pode ser nulo.");
         }
@@ -39,7 +41,10 @@ public class UsuarioService implements Serializable {
         if (usuario.getSenha() == null || usuario.getSenha().isBlank()) {
             throw new IllegalArgumentException("A senha é obrigatória.");
         }
-        if (!usuario.getSenha().startsWith("$2a$") && !usuario.getSenha().startsWith("$2b$")) {
+        Usuario existente = usuario.getId() == null ? null : em.find(Usuario.class, usuario.getId());
+        if (existente == null || !usuario.getSenha().equals(existente.getSenha())) {
+            if (usuario.getSenha().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)
+                throw new IllegalArgumentException("Senha excede o limite de 72 bytes do BCrypt.");
             usuario.setSenha(BCrypt.hashpw(usuario.getSenha(), BCrypt.gensalt(12)));
         }
         if (usuario.getId() == null) {
@@ -100,6 +105,7 @@ public class UsuarioService implements Serializable {
      * Remove um usuário do banco de dados pelo seu identificador.
      */
     public void excluir(Long id) {
+        acesso.administrar();
         if (id != null) {
             Usuario usuario = buscarPorId(id);
             if (usuario != null) {
@@ -119,6 +125,7 @@ public class UsuarioService implements Serializable {
         if (email == null || email.trim().isEmpty() || senha == null || senha.isEmpty()) {
             return null;
         }
+        if (senha.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) return null;
         Usuario usuario = buscarPorEmail(email);
         if (usuario == null) {
             return null;
@@ -136,4 +143,5 @@ public class UsuarioService implements Serializable {
     public void setEntityManager(EntityManager em) {
         this.em = em;
     }
+    public void setAcesso(com.obrasync.security.AccessPolicy acesso) { this.acesso = acesso; }
 }
